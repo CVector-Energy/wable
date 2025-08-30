@@ -16,6 +16,7 @@ program
   .option('--get-candidates <jobShortcode>', 'Download candidates for a specific job')
   .option('--subdomain <subdomain>', 'Workable subdomain')
   .option('--token <token>', 'Workable API token')
+  .option('--base-dir <baseDir>', 'Base directory for candidate subdirectories (default: current directory)')
   .action(async (options) => {
     if (!options.subdomain || !options.token) {
       console.error('Error: --subdomain and --token are required');
@@ -41,7 +42,7 @@ program
     if (options.getCandidates) {
       try {
         const candidateManager = new CandidateManager(workableAPI);
-        await candidateManager.downloadCandidates(options.getCandidates);
+        await candidateManager.downloadCandidates(options.getCandidates, options.baseDir);
       } catch (error) {
         console.error('Error downloading candidates:', error instanceof Error ? error.message : error);
         process.exit(1);

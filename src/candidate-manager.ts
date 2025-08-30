@@ -47,14 +47,14 @@ export class CandidateManager {
     }
   }
 
-  async downloadCandidates(jobShortcode: string): Promise<void> {
+  async downloadCandidates(jobShortcode: string, baseDir?: string): Promise<void> {
     console.log(`Downloading candidates for job: ${jobShortcode}`);
     
     const candidatesResponse = await this.workableAPI.getCandidates(jobShortcode);
     
     for (const candidate of candidatesResponse.candidates) {
       const sanitizedEmail = this.sanitizeEmail(candidate.email);
-      const candidateDir = path.join(process.cwd(), sanitizedEmail);
+      const candidateDir = path.join(baseDir || process.cwd(), sanitizedEmail);
       
       await this.ensureDirectoryExists(candidateDir);
       
