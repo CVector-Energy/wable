@@ -2,6 +2,7 @@
 
 import { Command } from 'commander';
 import { WorkableAPI } from './workable-api';
+import { CandidateManager } from './candidate-manager';
 
 const program = new Command();
 
@@ -12,17 +13,19 @@ program
 
 program
   .option('--get-jobs', 'Get available jobs from Workable')
+  .option('--get-candidates <jobShortcode>', 'Download candidates for a specific job')
   .option('--subdomain <subdomain>', 'Workable subdomain')
   .option('--token <token>', 'Workable API token')
   .action(async (options) => {
-    if (options.getJobs) {
-      if (!options.subdomain || !options.token) {
-        console.error('Error: --subdomain and --token are required when using --get-jobs');
-        process.exit(1);
-      }
+    if (!options.subdomain || !options.token) {
+      console.error('Error: --subdomain and --token are required');
+      process.exit(1);
+    }
 
+    const workableAPI = new WorkableAPI(options.subdomain, options.token);
+
+    if (options.getJobs) {
       try {
-        const workableAPI = new WorkableAPI(options.subdomain, options.token);
         const response = await workableAPI.getJobs();
         
         console.log('Available Jobs:');
@@ -31,6 +34,16 @@ program
         });
       } catch (error) {
         console.error('Error fetching jobs:', error instanceof Error ? error.message : error);
+        process.exit(1);
+      }
+    }
+
+    if (options.getCandidates) {
+      try {
+        const candidateManager = new CandidateManager(workableAPI);
+        await candidateManager.downloadCandidates(options.getCandidates);
+      } catch (error) {
+        console.error('Error downloading candidates:', error instanceof Error ? error.message : error);
         process.exit(1);
       }
     }

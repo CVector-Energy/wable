@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { WorkableJobsResponse } from './types';
+import { WorkableJobsResponse, WorkableCandidatesResponse, WorkableCandidateDetail } from './types';
 
 export class WorkableAPI {
   private baseUrl: string;
@@ -22,6 +22,57 @@ export class WorkableAPI {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         throw new Error(`Workable API error: ${error.response?.status} ${error.response?.statusText}`);
+      }
+      throw error;
+    }
+  }
+
+  async getCandidates(jobShortcode: string): Promise<WorkableCandidatesResponse> {
+    try {
+      const response = await axios.get(`${this.baseUrl}/jobs/${jobShortcode}/candidates`, {
+        headers: {
+          'Authorization': `Bearer ${this.apiToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Workable API error: ${error.response?.status} ${error.response?.statusText}`);
+      }
+      throw error;
+    }
+  }
+
+  async getCandidateById(candidateId: string): Promise<WorkableCandidateDetail> {
+    try {
+      const response = await axios.get(`${this.baseUrl}/candidates/${candidateId}`, {
+        headers: {
+          'Authorization': `Bearer ${this.apiToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`Workable API error: ${error.response?.status} ${error.response?.statusText}`);
+      }
+      throw error;
+    }
+  }
+
+  async downloadFile(url: string): Promise<Buffer> {
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          'Authorization': `Bearer ${this.apiToken}`
+        },
+        responseType: 'arraybuffer'
+      });
+      return Buffer.from(response.data);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        throw new Error(`File download error: ${error.response?.status} ${error.response?.statusText}`);
       }
       throw error;
     }
