@@ -18,9 +18,10 @@ describe('CandidateManager', () => {
     jest.spyOn(console, 'warn').mockImplementation();
     jest.spyOn(console, 'error').mockImplementation();
     
-    // Create unique test directory
+    // Create unique test directory with test name for better clarity
     const timestamp = Date.now();
-    testDir = path.join(process.cwd(), 'var', 'jest', timestamp.toString());
+    const testName = expect.getState().currentTestName?.replace(/[^a-zA-Z0-9]/g, '_') || 'unknown';
+    testDir = path.join(process.cwd(), 'var', 'jest', testName, timestamp.toString());
     fs.mkdirSync(testDir, { recursive: true });
     
     mockWorkableAPI = {
