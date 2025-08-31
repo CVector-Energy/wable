@@ -66,12 +66,52 @@ export interface WorkableCandidatesResponse {
   };
 }
 
-export interface WorkableCandidateDetail extends WorkableCandidate {
+export interface WorkableEducationEntry {
+  degree: string;
+  school: string;
+  field_of_study: string;
+  start_date: string | null;
+  end_date: string | null;
+}
+
+export interface WorkableExperienceEntry {
+  title: string;
+  company: string;
+  industry: string;
   summary: string;
-  experience: any[];
-  education: any[];
+  start_date: string | null;
+  end_date: string | null;
+  current: boolean;
+}
+
+export interface WorkableSocialProfile {
+  type: string;
+  name: string;
+  username: string;
+  url: string;
+}
+
+export interface WorkableLocation {
+  country: string;
+  country_code: string;
+  region: string;
+  region_code: string;
+  city: string;
+  zip_code: string;
+  telecommuting: boolean;
+}
+
+export interface WorkableCandidateDetail extends WorkableCandidate {
+  image_url: string | null;
+  summary: string;
+  experience_entries: WorkableExperienceEntry[];
+  education_entries: WorkableEducationEntry[];
   skills: string[];
   tags: string[];
-  social_profiles: any[];
+  social_profiles: WorkableSocialProfile[];
   attachments: any[];
+  answers: any[];
+  location: WorkableLocation;
+  stage_kind: string;
+  withdrew: boolean;
 }

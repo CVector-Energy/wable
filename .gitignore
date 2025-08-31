@@ -17,3 +17,6 @@ dist/
 
 # Program output
 var/
+
+# MacOS
+.DS_Store

@@ -58,13 +58,26 @@ describe('CandidateManager', () => {
 
     const mockCandidateDetail = {
       ...mockCandidate,
+      image_url: null,
       summary: 'Experienced software engineer',
-      experience: [],
-      education: [],
+      experience_entries: [],
+      education_entries: [],
       skills: ['JavaScript', 'TypeScript'],
       tags: [],
       social_profiles: [],
-      attachments: []
+      attachments: [],
+      answers: [],
+      location: {
+        country: 'United States',
+        country_code: 'US',
+        region: 'California',
+        region_code: 'CA',
+        city: 'San Francisco',
+        zip_code: '94102',
+        telecommuting: false
+      },
+      stage_kind: 'sourced',
+      withdrew: false
     };
 
     beforeEach(() => {
@@ -148,7 +161,7 @@ describe('CandidateManager', () => {
       await candidateManager.downloadCandidates('SE001');
 
       expect(mockWorkableAPI.downloadFile).not.toHaveBeenCalled();
-      expect(mockedFs.writeFileSync).toHaveBeenCalledTimes(2); // Only index and show files
+      expect(mockedFs.writeFileSync).toHaveBeenCalledTimes(3); // Index, show files, and profile
     });
   });
 });

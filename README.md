@@ -60,7 +60,8 @@ yarn dev --get-candidates SE001 --subdomain your-company --token your-api-token
 - Creates a directory for each candidate using their email address
 - `workable-index.json`: Basic candidate information from the candidates list
 - `workable-show.json`: Detailed candidate information from individual candidate API call
-- `0-RESUME.pdf`: Resume file (if available)
+- `0-PROFILE.md`: Formatted markdown profile with all candidate information
+- `0-RESUME.pdf`: Resume file (if available, downloaded from S3)
 - `0-COVER.txt`: Cover letter text (if provided)
 
 **Smart Updates:**
@@ -71,12 +72,14 @@ The application checks the `updated_at` timestamp and only downloads candidates 
 john.doe@example.com/
 ├── workable-index.json
 ├── workable-show.json
+├── 0-PROFILE.md
 ├── 0-RESUME.pdf
 └── 0-COVER.txt
 
 jane.smith@company.com/
 ├── workable-index.json
 ├── workable-show.json
+├── 0-PROFILE.md
 └── 0-RESUME.pdf
 ```
 

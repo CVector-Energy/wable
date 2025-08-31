@@ -34,19 +34,25 @@ This is a TypeScript CLI application for interacting with the Workable API. The 
 
 ### Key Patterns
 
-- **Error Handling**: Comprehensive error handling with axios error checking and user-friendly messages
+- **Rate Limiting**: Respects Workable API rate limits (10 requests per 10 seconds for account tokens) with automatic queuing and waiting
+- **Error Handling**: Comprehensive error handling with axios error checking, rate limit detection (429 errors), and user-friendly messages
 - **Smart Updates**: Uses timestamp comparison (`updated_at` field) to only download candidates when they've been updated
-- **File Organization**: Creates directories using sanitized email addresses and saves structured data as JSON with specific file naming conventions (`workable-index.json`, `workable-show.json`, `0-RESUME.pdf`, `0-COVER.txt`)
+- **File Organization**: Creates directories using sanitized email addresses and saves structured data as JSON with specific file naming conventions (`workable-index.json`, `workable-show.json`, `0-PROFILE.md`, `0-RESUME.pdf`, `0-COVER.txt`)
 - **API Integration**: Three main API endpoints: jobs list, job candidates, and individual candidate details
 
 ### Data Flow
 
 1. CLI parses options and validates required parameters (subdomain, token)
-2. WorkableAPI class handles all HTTP requests to Workable's v3 API
+2. WorkableAPI class handles all HTTP requests to Workable's v3 API with automatic rate limiting:
+   - Tracks rate limit headers (`X-Rate-Limit-Remaining`, `X-Rate-Limit-Reset`)
+   - Queues requests and adds delays between them to prevent rate limit violations
+   - Automatically waits when rate limits are reached
 3. For candidate downloads, CandidateManager orchestrates the process:
    - Fetches candidate list for a job
    - Checks each candidate's update timestamp
    - Downloads detailed candidate info and attachments only if updated
+   - Generates markdown profile with formatted candidate information
+   - Downloads resume from S3 (doesn't count against API quota)
    - Creates organized directory structure per candidate
 
 The application uses Workable API v3 endpoints and requires a valid API token and subdomain for authentication.

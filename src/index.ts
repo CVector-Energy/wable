@@ -44,7 +44,7 @@ program
         const candidateManager = new CandidateManager(workableAPI);
         await candidateManager.downloadCandidates(options.getCandidates, options.baseDir);
       } catch (error) {
-        console.error('Error downloading candidates:', error instanceof Error ? error.message : error);
+        console.error('Error downloading candidates:', error);
         process.exit(1);
       }
     }
