@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import { WorkableAPI } from './workable-api';
 import { CandidateManager } from './candidate-manager';
+import { JobManager } from './job-manager';
 
 const program = new Command();
 
@@ -12,11 +13,13 @@ program
   .version('1.0.0');
 
 program
-  .option('--get-jobs', 'Get available jobs from Workable')
-  .option('--get-candidates <jobShortcode>', 'Download candidates for a specific job')
+  .option('--get-jobs', 'Process all jobs and download stages information')
+  .option('--get-candidates', 'Download candidates for a specific job')
+  .option('--shortcode <jobShortcode>', 'Job shortcode (required when using --get-candidates)')
+  .option('--updated-after <date>', 'Filter jobs/candidates updated after this date (ISO format)')
   .option('--subdomain <subdomain>', 'Workable subdomain')
   .option('--token <token>', 'Workable API token')
-  .option('--base-dir <baseDir>', 'Base directory for candidate subdirectories (default: current directory)')
+  .option('--base-dir <baseDir>', 'Base directory for outputs (default: current directory)')
   .action(async (options) => {
     if (!options.subdomain || !options.token) {
       console.error('Error: --subdomain and --token are required');
@@ -27,22 +30,23 @@ program
 
     if (options.getJobs) {
       try {
-        const response = await workableAPI.getJobs();
-        
-        console.log('Available Jobs:');
-        response.jobs.forEach((job) => {
-          console.log(`${job.title} (${job.shortcode})`);
-        });
+        const jobManager = new JobManager(workableAPI);
+        await jobManager.processAllJobs(options.baseDir, options.updatedAfter);
       } catch (error) {
-        console.error('Error fetching jobs:', error instanceof Error ? error.message : error);
+        console.error('Error processing jobs:', error instanceof Error ? error.message : error);
         process.exit(1);
       }
     }
 
     if (options.getCandidates) {
+      if (!options.shortcode) {
+        console.error('Error: --shortcode is required when using --get-candidates');
+        process.exit(1);
+      }
+      
       try {
         const candidateManager = new CandidateManager(workableAPI);
-        await candidateManager.downloadCandidates(options.getCandidates, options.baseDir);
+        await candidateManager.downloadCandidates(options.shortcode, options.baseDir, options.updatedAfter);
       } catch (error) {
         console.error('Error downloading candidates:', error);
         process.exit(1);

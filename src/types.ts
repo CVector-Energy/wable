@@ -115,3 +115,14 @@ export interface WorkableCandidateDetail extends WorkableCandidate {
   stage_kind: string;
   withdrew: boolean;
 }
+
+export interface WorkableJobStage {
+  slug: string;
+  name: string;
+  kind: string;
+  position: number;
+}
+
+export interface WorkableJobStagesResponse {
+  stages: WorkableJobStage[];
+}

@@ -118,12 +118,12 @@ describe('CandidateManager', () => {
     it('should download new candidates', async () => {
       await candidateManager.downloadCandidates('SE001', testDir);
 
-      expect(mockWorkableAPI.getCandidates).toHaveBeenCalledWith('SE001');
+      expect(mockWorkableAPI.getCandidates).toHaveBeenCalledWith('SE001', undefined);
       expect(mockWorkableAPI.getCandidateById).toHaveBeenCalledWith('candidate123');
       expect(mockWorkableAPI.downloadFile).toHaveBeenCalledWith('https://example.com/resume.pdf');
 
       // Verify files were created
-      const candidateDir = path.join(testDir, 'john.doe@example.com');
+      const candidateDir = path.join(testDir, 'candidates', 'john.doe@example.com');
       expect(fs.existsSync(candidateDir)).toBe(true);
       expect(fs.existsSync(path.join(candidateDir, 'workable-index.json'))).toBe(true);
       expect(fs.existsSync(path.join(candidateDir, 'workable-show.json'))).toBe(true);
@@ -156,7 +156,7 @@ describe('CandidateManager', () => {
 
     it('should skip candidates that are up to date', async () => {
       // Pre-create candidate directory with existing data that's newer
-      const candidateDir = path.join(testDir, 'john.doe@example.com');
+      const candidateDir = path.join(testDir, 'candidates', 'john.doe@example.com');
       fs.mkdirSync(candidateDir, { recursive: true });
       
       const existingData = { ...mockCandidate, updated_at: '2023-12-01T12:00:00Z' };
@@ -164,7 +164,7 @@ describe('CandidateManager', () => {
 
       await candidateManager.downloadCandidates('SE001', testDir);
 
-      expect(mockWorkableAPI.getCandidates).toHaveBeenCalledWith('SE001');
+      expect(mockWorkableAPI.getCandidates).toHaveBeenCalledWith('SE001', undefined);
       expect(mockWorkableAPI.getCandidateById).not.toHaveBeenCalled();
       expect(console.log).toHaveBeenCalledWith('Skipping candidate (up to date): john.doe@example.com');
     });
@@ -194,7 +194,7 @@ describe('CandidateManager', () => {
       expect(mockWorkableAPI.downloadFile).not.toHaveBeenCalled();
 
       // Verify only the files that should exist are created
-      const candidateDir = path.join(testDir, 'john.doe@example.com');
+      const candidateDir = path.join(testDir, 'candidates', 'john.doe@example.com');
       expect(fs.existsSync(path.join(candidateDir, 'workable-index.json'))).toBe(true);
       expect(fs.existsSync(path.join(candidateDir, 'workable-show.json'))).toBe(true);
       expect(fs.existsSync(path.join(candidateDir, '0-PROFILE.md'))).toBe(true);

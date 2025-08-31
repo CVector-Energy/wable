@@ -5,10 +5,12 @@ A TypeScript command-line application for interacting with the Workable API to d
 ## Features
 
 - **Job Listings**: Fetch and display available jobs from your Workable account
+- **Job Processing**: Download complete job information with recruitment stage details
 - **Candidate Download**: Download candidate information, resumes, and cover letters
 - **Smart Updates**: Only downloads candidates when they've been updated since last fetch
 - **TypeScript**: Fully typed with comprehensive error handling
 - **CLI Interface**: Simple command-line interface using Commander.js
+- **Organized Structure**: Candidates saved to `candidates/` and jobs to `jobs/{shortcode}/`
 
 ## Installation
 
@@ -24,23 +26,33 @@ yarn build
 
 ### Get Jobs
 
-Fetch and display all available jobs from your Workable account:
+Download complete job information including recruitment stages:
 
 ```bash
-yarn dev --get-jobs --subdomain your-company --token your-api-token
+yarn dev --get-jobs --subdomain your-company --token your-api-token --base-dir ./output
+
+# Only get jobs updated since a specific date
+yarn dev --get-jobs --subdomain your-company --token your-api-token --updated-after 2023-12-01T00:00:00Z
 ```
 
 **Parameters:**
-- `--get-jobs`: Fetch and display job listings
-- `--subdomain <subdomain>`: Your Workable subdomain (required)
+- `--get-jobs`: Download all jobs with stage information
+- `--subdomain <subdomain>`: Your Workable subdomain (required)  
 - `--token <token>`: Your Workable API token (required)
+- `--base-dir <directory>`: Output directory (optional, defaults to current directory)
+- `--updated-after <date>`: Only download jobs updated after this date (ISO format, optional)
 
-**Output:**
+**What gets created:**
 ```
-Available Jobs:
-Software Engineer (SE001)
-Product Manager (PM001)
-Marketing Specialist (MS001)
+jobs/
+├── SE001/
+│   ├── job-index.json     # Complete job information
+│   ├── stages.json        # Raw stages data from API
+│   └── stages.md         # Formatted recruitment pipeline
+└── PM001/
+    ├── job-index.json
+    ├── stages.json
+    └── stages.md
 ```
 
 ### Get Candidates
@@ -48,16 +60,21 @@ Marketing Specialist (MS001)
 Download candidate information for a specific job:
 
 ```bash
-yarn dev --get-candidates SE001 --subdomain your-company --token your-api-token
+yarn dev --get-candidates --shortcode SE001 --subdomain your-company --token your-api-token
+
+# Only get candidates updated since a specific date
+yarn dev --get-candidates --shortcode SE001 --subdomain your-company --token your-api-token --updated-after 2023-12-01T00:00:00Z
 ```
 
 **Parameters:**
-- `--get-candidates <jobShortcode>`: Download candidates for the specified job
+- `--get-candidates`: Download candidates for a specific job
+- `--shortcode <jobShortcode>`: Job shortcode (required when using --get-candidates)
 - `--subdomain <subdomain>`: Your Workable subdomain (required)  
 - `--token <token>`: Your Workable API token (required)
+- `--updated-after <date>`: Only download candidates updated after this date (ISO format, optional)
 
 **What gets downloaded:**
-- Creates a directory for each candidate using their email address
+- Creates a directory for each candidate using their email address under `candidates/`
 - `workable-index.json`: Basic candidate information from the candidates list
 - `workable-show.json`: Detailed candidate information from individual candidate API call
 - `0-PROFILE.md`: Formatted markdown profile with all candidate information
@@ -69,18 +86,18 @@ The application checks the `updated_at` timestamp and only downloads candidates 
 
 **Example directory structure:**
 ```
-john.doe@example.com/
-├── workable-index.json
-├── workable-show.json
-├── 0-PROFILE.md
-├── 0-RESUME.pdf
-└── 0-COVER.txt
-
-jane.smith@company.com/
-├── workable-index.json
-├── workable-show.json
-├── 0-PROFILE.md
-└── 0-RESUME.pdf
+candidates/
+├── john.doe@example.com/
+│   ├── workable-index.json
+│   ├── workable-show.json
+│   ├── 0-PROFILE.md
+│   ├── 0-RESUME.pdf
+│   └── 0-COVER.txt
+└── jane.smith@company.com/
+    ├── workable-index.json
+    ├── workable-show.json
+    ├── 0-PROFILE.md
+    └── 0-RESUME.pdf
 ```
 
 ### API Token

@@ -172,16 +172,16 @@ export class CandidateManager {
     }
   }
 
-  async downloadCandidates(jobShortcode: string, baseDir?: string): Promise<void> {
+  async downloadCandidates(jobShortcode: string, baseDir?: string, updatedAfter?: string): Promise<void> {
     console.log(`Downloading candidates for job: ${jobShortcode}`);
     
-    const candidatesResponse = await this.workableAPI.getCandidates(jobShortcode);
+    const candidatesResponse = await this.workableAPI.getCandidates(jobShortcode, updatedAfter);
     const detailJobs: Promise<void>[] = [];
     
     // First pass: Process candidate index and queue detail jobs
     for (const candidate of candidatesResponse.candidates) {
       const sanitizedEmail = this.sanitizeEmail(candidate.email);
-      const candidateDir = path.join(baseDir || process.cwd(), sanitizedEmail);
+      const candidateDir = path.join(baseDir || process.cwd(), 'candidates', sanitizedEmail);
       
       await this.ensureDirectoryExists(candidateDir);
       
