@@ -3,20 +3,25 @@ import * as path from 'path';
 import { CandidateManager } from '../candidate-manager';
 import { WorkableAPI } from '../workable-api';
 
-jest.mock('fs');
 jest.mock('../workable-api');
 
-const mockedFs = fs as jest.Mocked<typeof fs>;
 const MockedWorkableAPI = WorkableAPI as jest.MockedClass<typeof WorkableAPI>;
 
 describe('CandidateManager', () => {
   let candidateManager: CandidateManager;
   let mockWorkableAPI: jest.Mocked<WorkableAPI>;
+  let testDir: string;
 
   beforeEach(() => {
     jest.clearAllMocks();
     jest.spyOn(console, 'log').mockImplementation();
     jest.spyOn(console, 'warn').mockImplementation();
+    jest.spyOn(console, 'error').mockImplementation();
+    
+    // Create unique test directory
+    const timestamp = Date.now();
+    testDir = path.join(process.cwd(), 'var', 'jest', timestamp.toString());
+    fs.mkdirSync(testDir, { recursive: true });
     
     mockWorkableAPI = {
       getCandidates: jest.fn(),
@@ -29,6 +34,10 @@ describe('CandidateManager', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
+    // Clean up test directory
+    if (fs.existsSync(testDir)) {
+      fs.rmSync(testDir, { recursive: true, force: true });
+    }
   });
 
   describe('downloadCandidates', () => {
@@ -88,52 +97,53 @@ describe('CandidateManager', () => {
       
       mockWorkableAPI.getCandidateById.mockResolvedValue(mockCandidateDetail);
       mockWorkableAPI.downloadFile.mockResolvedValue(Buffer.from('PDF content'));
-      
-      mockedFs.existsSync.mockReturnValue(false);
-      mockedFs.mkdirSync.mockImplementation();
-      mockedFs.writeFileSync.mockImplementation();
     });
 
     it('should download new candidates', async () => {
-      await candidateManager.downloadCandidates('SE001');
+      await candidateManager.downloadCandidates('SE001', testDir);
 
       expect(mockWorkableAPI.getCandidates).toHaveBeenCalledWith('SE001');
-      expect(mockedFs.mkdirSync).toHaveBeenCalledWith(
-        path.join(process.cwd(), 'john.doe@example.com'),
-        { recursive: true }
-      );
       expect(mockWorkableAPI.getCandidateById).toHaveBeenCalledWith('candidate123');
       expect(mockWorkableAPI.downloadFile).toHaveBeenCalledWith('https://example.com/resume.pdf');
-      
-      expect(mockedFs.writeFileSync).toHaveBeenCalledWith(
-        path.join(process.cwd(), 'john.doe@example.com', 'workable-index.json'),
-        JSON.stringify(mockCandidate, null, 2)
-      );
-      
-      expect(mockedFs.writeFileSync).toHaveBeenCalledWith(
-        path.join(process.cwd(), 'john.doe@example.com', 'workable-show.json'),
-        JSON.stringify(mockCandidateDetail, null, 2)
-      );
-      
-      expect(mockedFs.writeFileSync).toHaveBeenCalledWith(
-        path.join(process.cwd(), 'john.doe@example.com', '0-RESUME.pdf'),
-        Buffer.from('PDF content')
-      );
-      
-      expect(mockedFs.writeFileSync).toHaveBeenCalledWith(
-        path.join(process.cwd(), 'john.doe@example.com', '0-COVER.txt'),
-        'I am interested in this position...'
-      );
+
+      // Verify files were created
+      const candidateDir = path.join(testDir, 'john.doe@example.com');
+      expect(fs.existsSync(candidateDir)).toBe(true);
+      expect(fs.existsSync(path.join(candidateDir, 'workable-index.json'))).toBe(true);
+      expect(fs.existsSync(path.join(candidateDir, 'workable-show.json'))).toBe(true);
+      expect(fs.existsSync(path.join(candidateDir, '0-PROFILE.md'))).toBe(true);
+      expect(fs.existsSync(path.join(candidateDir, '0-RESUME.pdf'))).toBe(true);
+      expect(fs.existsSync(path.join(candidateDir, '0-COVER.txt'))).toBe(true);
+
+      // Verify file contents
+      const indexContent = JSON.parse(fs.readFileSync(path.join(candidateDir, 'workable-index.json'), 'utf-8'));
+      expect(indexContent.email).toBe('john.doe@example.com');
+
+      const showContent = JSON.parse(fs.readFileSync(path.join(candidateDir, 'workable-show.json'), 'utf-8'));
+      expect(showContent.skills).toEqual(['JavaScript', 'TypeScript']);
+
+      const profileContent = fs.readFileSync(path.join(candidateDir, '0-PROFILE.md'), 'utf-8');
+      expect(profileContent).toContain('# John Doe');
+      expect(profileContent).toContain('📧 john.doe@example.com');
+
+      const resumeContent = fs.readFileSync(path.join(candidateDir, '0-RESUME.pdf'));
+      expect(resumeContent).toEqual(Buffer.from('PDF content'));
+
+      const coverContent = fs.readFileSync(path.join(candidateDir, '0-COVER.txt'), 'utf-8');
+      expect(coverContent).toBe('I am interested in this position...');
     });
 
     it('should skip candidates that are up to date', async () => {
-      const existingData = { updated_at: '2023-12-01T12:00:00Z' };
+      // Pre-create candidate directory with existing data that's newer
+      const candidateDir = path.join(testDir, 'john.doe@example.com');
+      fs.mkdirSync(candidateDir, { recursive: true });
       
-      mockedFs.existsSync.mockReturnValue(true);
-      mockedFs.readFileSync.mockReturnValue(JSON.stringify(existingData));
+      const existingData = { ...mockCandidate, updated_at: '2023-12-01T12:00:00Z' };
+      fs.writeFileSync(path.join(candidateDir, 'workable-index.json'), JSON.stringify(existingData, null, 2));
 
-      await candidateManager.downloadCandidates('SE001');
+      await candidateManager.downloadCandidates('SE001', testDir);
 
+      expect(mockWorkableAPI.getCandidates).toHaveBeenCalledWith('SE001');
       expect(mockWorkableAPI.getCandidateById).not.toHaveBeenCalled();
       expect(console.log).toHaveBeenCalledWith('Skipping candidate (up to date): john.doe@example.com');
     });
@@ -158,10 +168,17 @@ describe('CandidateManager', () => {
       
       mockWorkableAPI.getCandidateById.mockResolvedValue(candidateDetailWithoutFiles);
 
-      await candidateManager.downloadCandidates('SE001');
+      await candidateManager.downloadCandidates('SE001', testDir);
 
       expect(mockWorkableAPI.downloadFile).not.toHaveBeenCalled();
-      expect(mockedFs.writeFileSync).toHaveBeenCalledTimes(3); // Index, show files, and profile
+
+      // Verify only the files that should exist are created
+      const candidateDir = path.join(testDir, 'john.doe@example.com');
+      expect(fs.existsSync(path.join(candidateDir, 'workable-index.json'))).toBe(true);
+      expect(fs.existsSync(path.join(candidateDir, 'workable-show.json'))).toBe(true);
+      expect(fs.existsSync(path.join(candidateDir, '0-PROFILE.md'))).toBe(true);
+      expect(fs.existsSync(path.join(candidateDir, '0-RESUME.pdf'))).toBe(false);
+      expect(fs.existsSync(path.join(candidateDir, '0-COVER.txt'))).toBe(false);
     });
   });
 });

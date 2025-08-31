@@ -1,7 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { promisify } from 'util';
 import { WorkableAPI } from './workable-api';
 import { WorkableCandidate, WorkableCandidateDetail } from './types';
+
+const mkdir = promisify(fs.mkdir);
+const writeFile = promisify(fs.writeFile);
+const stat = promisify(fs.stat);
+const readFile = promisify(fs.readFile);
 
 export class CandidateManager {
   private workableAPI: WorkableAPI;
@@ -15,14 +21,16 @@ export class CandidateManager {
   }
 
   private async ensureDirectoryExists(dirPath: string): Promise<void> {
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true });
+    try {
+      await stat(dirPath);
+    } catch {
+      await mkdir(dirPath, { recursive: true });
     }
   }
 
   private async getFileModificationTime(filePath: string): Promise<Date | null> {
     try {
-      const stats = fs.statSync(filePath);
+      const stats = await stat(filePath);
       return stats.mtime;
     } catch {
       return null;
@@ -32,12 +40,8 @@ export class CandidateManager {
   private async shouldUpdateCandidate(candidate: WorkableCandidate, candidateDir: string): Promise<boolean> {
     const indexFilePath = path.join(candidateDir, 'workable-index.json');
     
-    if (!fs.existsSync(indexFilePath)) {
-      return true;
-    }
-
     try {
-      const existingData = JSON.parse(fs.readFileSync(indexFilePath, 'utf-8'));
+      const existingData = JSON.parse(await readFile(indexFilePath, 'utf-8'));
       const existingUpdatedAt = new Date(existingData.updated_at);
       const newUpdatedAt = new Date(candidate.updated_at);
       
@@ -132,11 +136,49 @@ export class CandidateManager {
     return sections.join('\n\n');
   }
 
+  private async processCandidateDetails(candidate: WorkableCandidate, candidateDir: string): Promise<void> {
+    try {
+      console.log(`Processing details for ${candidate.email}`);
+      
+      const candidateDetail = await this.workableAPI.getCandidateById(candidate.id);
+      const showFilePath = path.join(candidateDir, 'workable-show.json');
+      await writeFile(showFilePath, JSON.stringify(candidateDetail, null, 2));
+      
+      // Generate markdown profile
+      const markdownProfile = this.generateMarkdownProfile(candidateDetail);
+      const profileFilePath = path.join(candidateDir, '0-PROFILE.md');
+      await writeFile(profileFilePath, markdownProfile);
+      console.log(`  Generated profile for ${candidate.email}`);
+      
+      // Download resume from candidate details (this is from S3 and doesn't count against API quota)
+      if (candidateDetail.resume_url) {
+        try {
+          const resumeBuffer = await this.workableAPI.downloadFile(candidateDetail.resume_url);
+          const resumeFilePath = path.join(candidateDir, '0-RESUME.pdf');
+          await writeFile(resumeFilePath, resumeBuffer);
+          console.log(`  Downloaded resume for ${candidate.email}`);
+        } catch (error) {
+          console.warn(`  Failed to download resume for ${candidate.email}: ${error instanceof Error ? error.message : error}`);
+        }
+      }
+      
+      if (candidateDetail.cover_letter) {
+        const coverLetterPath = path.join(candidateDir, '0-COVER.txt');
+        await writeFile(coverLetterPath, candidateDetail.cover_letter);
+        console.log(`  Saved cover letter for ${candidate.email}`);
+      }
+    } catch (error) {
+      console.error(`  Failed to process details for ${candidate.email}: ${error instanceof Error ? error.message : error}`);
+    }
+  }
+
   async downloadCandidates(jobShortcode: string, baseDir?: string): Promise<void> {
     console.log(`Downloading candidates for job: ${jobShortcode}`);
     
     const candidatesResponse = await this.workableAPI.getCandidates(jobShortcode);
+    const detailJobs: Promise<void>[] = [];
     
+    // First pass: Process candidate index and queue detail jobs
     for (const candidate of candidatesResponse.candidates) {
       const sanitizedEmail = this.sanitizeEmail(candidate.email);
       const candidateDir = path.join(baseDir || process.cwd(), sanitizedEmail);
@@ -148,40 +190,20 @@ export class CandidateManager {
       if (shouldUpdate) {
         console.log(`Updating candidate: ${candidate.email}`);
         
+        // Write index file immediately (non-blocking for iteration)
         const indexFilePath = path.join(candidateDir, 'workable-index.json');
-        fs.writeFileSync(indexFilePath, JSON.stringify(candidate, null, 2));
+        await writeFile(indexFilePath, JSON.stringify(candidate, null, 2));
         
-        const candidateDetail = await this.workableAPI.getCandidateById(candidate.id);
-        const showFilePath = path.join(candidateDir, 'workable-show.json');
-        fs.writeFileSync(showFilePath, JSON.stringify(candidateDetail, null, 2));
-        
-        // Generate markdown profile
-        const markdownProfile = this.generateMarkdownProfile(candidateDetail);
-        const profileFilePath = path.join(candidateDir, '0-PROFILE.md');
-        fs.writeFileSync(profileFilePath, markdownProfile);
-        console.log(`  Generated profile for ${candidate.email}`);
-        
-        // Download resume from candidate details (this is from S3 and doesn't count against API quota)
-        if (candidateDetail.resume_url) {
-          try {
-            const resumeBuffer = await this.workableAPI.downloadFile(candidateDetail.resume_url);
-            const resumeFilePath = path.join(candidateDir, '0-RESUME.pdf');
-            fs.writeFileSync(resumeFilePath, resumeBuffer);
-            console.log(`  Downloaded resume for ${candidate.email}`);
-          } catch (error) {
-            console.warn(`  Failed to download resume for ${candidate.email}: ${error instanceof Error ? error.message : error}`);
-          }
-        }
-        
-        if (candidateDetail.cover_letter) {
-          const coverLetterPath = path.join(candidateDir, '0-COVER.txt');
-          fs.writeFileSync(coverLetterPath, candidateDetail.cover_letter);
-          console.log(`  Saved cover letter for ${candidate.email}`);
-        }
+        // Queue the detail processing job
+        detailJobs.push(this.processCandidateDetails(candidate, candidateDir));
       } else {
         console.log(`Skipping candidate (up to date): ${candidate.email}`);
       }
     }
+    
+    // Second pass: Wait for all detail processing to complete
+    console.log(`Processing details for ${detailJobs.length} candidates...`);
+    await Promise.all(detailJobs);
     
     console.log(`Processed ${candidatesResponse.candidates.length} candidates`);
   }
