@@ -75,105 +75,65 @@ export class WorkableAPI {
 
   async getJobs(updatedAfter?: string): Promise<WorkableJobsResponse> {
     return this.makeRequest(async () => {
-      try {
-        const params = new URLSearchParams();
-        if (updatedAfter) {
-          params.append('updated_after', updatedAfter);
-        }
-        
-        const url = `${this.baseUrl}/jobs${params.toString() ? `?${params.toString()}` : ''}`;
-        const response = await axios.get(url, {
-          headers: {
-            'Authorization': `Bearer ${this.apiToken}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        this.updateRateLimitInfo(response.headers);
-        return response.data;
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          if (error.response?.status === 429) {
-            throw new Error('Rate limit exceeded. Please wait before making more requests.');
-          }
-          throw new Error(`Workable API error: ${error.response?.status} ${error.response?.statusText}`);
-        }
-        throw error;
+      const params = new URLSearchParams();
+      if (updatedAfter) {
+        params.append('updated_after', updatedAfter);
       }
+      
+      const url = `${this.baseUrl}/jobs${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await axios.get(url, {
+        headers: {
+          'Authorization': `Bearer ${this.apiToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      this.updateRateLimitInfo(response.headers);
+      return response.data;
     });
   }
 
   async getCandidates(jobShortcode: string, updatedAfter?: string): Promise<WorkableCandidatesResponse> {
     return this.makeRequest(async () => {
-      try {
-        const params = new URLSearchParams();
-        if (updatedAfter) {
-          params.append('updated_after', updatedAfter);
-        }
-        
-        const url = `${this.baseUrl}/jobs/${jobShortcode}/candidates${params.toString() ? `?${params.toString()}` : ''}`;
-        const response = await axios.get(url, {
-          headers: {
-            'Authorization': `Bearer ${this.apiToken}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        this.updateRateLimitInfo(response.headers);
-        return response.data;
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          if (error.response?.status === 429) {
-            throw new Error('Rate limit exceeded. Please wait before making more requests.');
-          }
-          throw new Error(`Workable API error: ${error.response?.status} ${error.response?.statusText}`);
-        }
-        throw error;
+      const params = new URLSearchParams();
+      if (updatedAfter) {
+        params.append('updated_after', updatedAfter);
       }
+      
+      const url = `${this.baseUrl}/jobs/${jobShortcode}/candidates${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await axios.get(url, {
+        headers: {
+          'Authorization': `Bearer ${this.apiToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      this.updateRateLimitInfo(response.headers);
+      return response.data;
     });
   }
 
   async getCandidateById(candidateId: string): Promise<WorkableCandidateDetail> {
     return this.makeRequest(async () => {
-      try {
-        const response = await axios.get(`${this.baseUrl}/candidates/${candidateId}`, {
-          headers: {
-            'Authorization': `Bearer ${this.apiToken}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        this.updateRateLimitInfo(response.headers);
-        return response.data.candidate;
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          if (error.response?.status === 429) {
-            throw new Error('Rate limit exceeded. Please wait before making more requests.');
-          }
-          throw new Error(`Workable API error: ${error.response?.status} ${error.response?.statusText}`);
+      const response = await axios.get(`${this.baseUrl}/candidates/${candidateId}`, {
+        headers: {
+          'Authorization': `Bearer ${this.apiToken}`,
+          'Content-Type': 'application/json'
         }
-        throw error;
-      }
+      });
+      this.updateRateLimitInfo(response.headers);
+      return response.data.candidate;
     });
   }
 
   async getJobStages(jobShortcode: string): Promise<WorkableJobStagesResponse> {
     return this.makeRequest(async () => {
-      try {
-        const response = await axios.get(`${this.baseUrl}/jobs/${jobShortcode}/stages`, {
-          headers: {
-            'Authorization': `Bearer ${this.apiToken}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        this.updateRateLimitInfo(response.headers);
-        return response.data;
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          if (error.response?.status === 429) {
-            throw new Error('Rate limit exceeded. Please wait before making more requests.');
-          }
-          throw new Error(`Workable API error: ${error.response?.status} ${error.response?.statusText}`);
+      const response = await axios.get(`${this.baseUrl}/jobs/${jobShortcode}/stages`, {
+        headers: {
+          'Authorization': `Bearer ${this.apiToken}`,
+          'Content-Type': 'application/json'
         }
-        throw error;
-      }
+      });
+      this.updateRateLimitInfo(response.headers);
+      return response.data;
     });
   }
 

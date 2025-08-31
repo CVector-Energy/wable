@@ -91,7 +91,7 @@ describe('WorkableAPI', () => {
       mockedAxios.get.mockRejectedValue(mockError);
       mockedAxios.isAxiosError.mockReturnValue(true);
 
-      await expect(workableAPI.getJobs()).rejects.toThrow('Workable API error: 401 Unauthorized');
+      await expect(workableAPI.getJobs()).rejects.toEqual(mockError);
     });
 
     it('should handle network errors', async () => {
@@ -113,7 +113,7 @@ describe('WorkableAPI', () => {
       mockedAxios.get.mockRejectedValue(mockError);
       mockedAxios.isAxiosError.mockReturnValue(true);
 
-      await expect(workableAPI.getJobs()).rejects.toThrow('Rate limit exceeded. Please wait before making more requests.');
+      await expect(workableAPI.getJobs()).rejects.toEqual(mockError);
     });
   });
 
