@@ -77,7 +77,7 @@ export interface WorkableEducationEntry {
 export interface WorkableExperienceEntry {
   title: string;
   company: string;
-  industry: string;
+  industry: string | null;
   summary: string;
   start_date: string | null;
   end_date: string | null;

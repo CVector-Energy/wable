@@ -66,7 +66,26 @@ describe('CandidateManager', () => {
       ...mockCandidate,
       image_url: null,
       summary: 'Experienced software engineer',
-      experience_entries: [],
+      experience_entries: [
+        {
+          title: 'Senior Developer',
+          company: 'Tech Corp',
+          industry: 'Technology',
+          summary: 'Led development team',
+          start_date: '2022-01-01',
+          end_date: null,
+          current: true
+        },
+        {
+          title: 'Java Developer', 
+          company: 'Partners Soft',
+          industry: null,
+          summary: 'Worked on enterprise applications',
+          start_date: '2024-10-01',
+          end_date: '2025-03-01',
+          current: false
+        }
+      ],
       education_entries: [],
       skills: ['JavaScript', 'TypeScript'],
       tags: [],
@@ -122,6 +141,11 @@ describe('CandidateManager', () => {
       const profileContent = fs.readFileSync(path.join(candidateDir, '0-PROFILE.md'), 'utf-8');
       expect(profileContent).toContain('# John Doe');
       expect(profileContent).toContain('📧 john.doe@example.com');
+      
+      // Verify experience entries are formatted correctly
+      expect(profileContent).toContain('### Senior Developer at Tech Corp\n**Dec 2021 - Present** | Technology');
+      expect(profileContent).toContain('### Java Developer at Partners Soft\n**Sep 2024 - Feb 2025**\n'); // No industry shown
+      expect(profileContent).not.toContain('| null'); // Should never show "| null"
 
       const resumeContent = fs.readFileSync(path.join(candidateDir, '0-RESUME.pdf'));
       expect(resumeContent).toEqual(Buffer.from('PDF content'));

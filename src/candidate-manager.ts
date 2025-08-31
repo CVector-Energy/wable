@@ -101,7 +101,8 @@ export class CandidateManager {
       sections.push('## Work Experience');
       candidate.experience_entries.forEach(exp => {
         const duration = `${formatDate(exp.start_date)} - ${exp.current ? 'Present' : formatDate(exp.end_date)}`;
-        sections.push(`### ${exp.title} at ${exp.company}\n**${duration}** | ${exp.industry}\n\n${exp.summary || ''}`);
+        const industryText = exp.industry ? ` | ${exp.industry}` : '';
+        sections.push(`### ${exp.title} at ${exp.company}\n**${duration}**${industryText}\n\n${exp.summary || ''}`);
       });
     }
 
