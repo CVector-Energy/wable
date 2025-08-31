@@ -52,7 +52,6 @@ export class CandidateManager {
   }
 
   private generateMarkdownProfile(candidate: WorkableCandidateDetail): string {
-    console.log("generateMarkdownProfile", candidate.job);
     const formatDate = (dateStr: string | null): string => {
       if (!dateStr) return 'Present';
       return new Date(dateStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
