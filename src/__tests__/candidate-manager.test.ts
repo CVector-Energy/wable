@@ -34,10 +34,6 @@ describe('CandidateManager', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
-    // Clean up test directory
-    if (fs.existsSync(testDir)) {
-      fs.rmSync(testDir, { recursive: true, force: true });
-    }
   });
 
   describe('downloadCandidates', () => {
