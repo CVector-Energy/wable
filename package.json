@@ -1,7 +1,7 @@
 {
   "name": "wable",
   "version": "1.0.0",
-  "description": "TypeScript CLI application for Workable API",
+  "description": "CLI application for Workable API",
   "main": "dist/index.js",
   "bin": "dist/index.js",
   "scripts": {

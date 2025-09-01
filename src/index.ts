@@ -17,6 +17,7 @@ program
   .option('--get-candidates', 'Download candidates for a specific job')
   .option('--shortcode <jobShortcode>', 'Job shortcode (required when using --get-candidates)')
   .option('--updated-after <date>', 'Filter jobs/candidates updated after this date (ISO format)')
+  .option('--move-disqualified-candidates-to <directory>', 'Move disqualified candidates to specified directory')
   .option('--subdomain <subdomain>', 'Workable subdomain')
   .option('--token <token>', 'Workable API token')
   .option('--base-dir <baseDir>', 'Base directory for outputs (default: current directory)')
@@ -49,6 +50,16 @@ program
         await candidateManager.downloadCandidates(options.shortcode, options.baseDir, options.updatedAfter);
       } catch (error) {
         console.error('Error downloading candidates:', error);
+        process.exit(1);
+      }
+    }
+
+    if (options.moveDisqualifiedCandidatesTo) {
+      try {
+        const candidateManager = new CandidateManager(workableAPI);
+        await candidateManager.moveDisqualifiedCandidates(options.baseDir || process.cwd(), options.moveDisqualifiedCandidatesTo);
+      } catch (error) {
+        console.error('Error moving disqualified candidates:', error instanceof Error ? error.message : error);
         process.exit(1);
       }
     }

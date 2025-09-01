@@ -1,12 +1,13 @@
 # Wable
 
-A TypeScript command-line application for interacting with the Workable API to download candidate information.
+A command-line application for interacting with the Workable API to download candidate information.
 
 ## Features
 
 - **Job Listings**: Fetch and display available jobs from your Workable account
 - **Job Processing**: Download complete job information with recruitment stage details
 - **Candidate Download**: Download candidate information, resumes, and cover letters
+- **Candidate Management**: Move disqualified candidates to separate directories for organization
 - **Smart Updates**: Only downloads candidates when they've been updated since last fetch
 - **TypeScript**: Fully typed with comprehensive error handling
 - **CLI Interface**: Simple command-line interface using Commander.js
@@ -72,6 +73,22 @@ yarn dev --get-candidates --shortcode SE001 --subdomain your-company --token you
 - `--subdomain <subdomain>`: Your Workable subdomain (required)  
 - `--token <token>`: Your Workable API token (required)
 - `--updated-after <date>`: Only download candidates updated after this date (ISO format, optional)
+
+### Move Disqualified Candidates
+
+Move disqualified candidates to a separate directory based on their metadata:
+
+```bash
+yarn dev --move-disqualified-candidates-to ./disqualified --subdomain your-company --token your-api-token --base-dir ./output
+```
+
+**Parameters:**
+- `--move-disqualified-candidates-to <directory>`: Move disqualified candidates to specified directory
+- `--base-dir <directory>`: Source directory containing candidates (optional, defaults to current directory)
+- `--subdomain <subdomain>`: Your Workable subdomain (required)  
+- `--token <token>`: Your Workable API token (required)
+
+This command reads candidate metadata from `workable-index.json` files and moves candidates where `disqualified` is `true` to the specified directory. If the destination already contains a candidate with the same email, the files will be overwritten.
 
 **What gets downloaded:**
 - Creates a directory for each candidate using their email address under `candidates/`

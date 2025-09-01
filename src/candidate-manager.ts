@@ -202,4 +202,71 @@ export class CandidateManager {
     
     console.log(`Processed ${totalCandidates} candidates`);
   }
+
+  async moveDisqualifiedCandidates(baseDir: string, moveToDir: string): Promise<void> {
+    console.log(`Moving disqualified candidates from ${baseDir} to ${moveToDir}`);
+    
+    const candidatesDir = path.join(baseDir, 'candidates');
+    
+    // Check if candidates directory exists
+    try {
+      await stat(candidatesDir);
+    } catch {
+      console.log('No candidates directory found');
+      return;
+    }
+
+    // Ensure move-to directory exists
+    await this.ensureDirectoryExists(moveToDir);
+    
+    // Read all candidate directories
+    const candidateEntries = await fs.promises.readdir(candidatesDir, { withFileTypes: true });
+    const candidateDirs = candidateEntries.filter(entry => entry.isDirectory());
+    
+    let movedCount = 0;
+    
+    for (const candidateDir of candidateDirs) {
+      const candidateDirPath = path.join(candidatesDir, candidateDir.name);
+      const indexFilePath = path.join(candidateDirPath, 'workable-index.json');
+      
+      try {
+        // Read candidate metadata
+        const candidateData = JSON.parse(await readFile(indexFilePath, 'utf-8'));
+        
+        // Check if candidate is disqualified
+        if (candidateData.disqualified === true) {
+          console.log(`Moving disqualified candidate: ${candidateDir.name}`);
+          
+          // Create destination directory
+          const destinationDir = path.join(moveToDir, candidateDir.name);
+          await this.ensureDirectoryExists(destinationDir);
+          
+          // Move all files from source to destination
+          await this.moveDirectory(candidateDirPath, destinationDir);
+          
+          movedCount++;
+        }
+      } catch (error) {
+        console.warn(`Failed to process candidate ${candidateDir.name}: ${error instanceof Error ? error.message : error}`);
+      }
+    }
+    
+    console.log(`Moved ${movedCount} disqualified candidates`);
+  }
+  
+  private async moveDirectory(sourceDir: string, destinationDir: string): Promise<void> {
+    // Read all files in source directory
+    const files = await fs.promises.readdir(sourceDir);
+    
+    for (const file of files) {
+      const sourcePath = path.join(sourceDir, file);
+      const destinationPath = path.join(destinationDir, file);
+      
+      // Copy file to destination (overwrites if exists)
+      await fs.promises.copyFile(sourcePath, destinationPath);
+    }
+    
+    // Remove source directory
+    await fs.promises.rm(sourceDir, { recursive: true });
+  }
 }

@@ -202,4 +202,132 @@ describe('CandidateManager', () => {
       expect(fs.existsSync(path.join(candidateDir, '0-COVER.txt'))).toBe(false);
     });
   });
+
+  describe('moveDisqualifiedCandidates', () => {
+    const qualifiedCandidate = {
+      id: 'qualified123',
+      email: 'qualified@example.com',
+      name: 'Qualified Doe',
+      updated_at: '2023-12-01T10:00:00Z',
+      disqualified: false,
+      firstname: 'Qualified',
+      lastname: 'Doe',
+      headline: 'Software Engineer',
+      account: { subdomain: 'test', name: 'Test Company' },
+      job: { shortcode: 'SE001', title: 'Software Engineer' },
+      stage: 'sourced',
+      disqualification_reason: null,
+      hired_at: null,
+      sourced: true,
+      profile_url: 'https://test.workable.com/candidate/qualified123',
+      address: '123 Main St',
+      phone: '555-1234',
+      domain: 'example.com',
+      created_at: '2023-11-01T10:00:00Z',
+      resume_url: null,
+      cover_letter: null
+    };
+
+    const disqualifiedCandidate = {
+      ...qualifiedCandidate,
+      id: 'disqualified123',
+      email: 'disqualified@example.com',
+      name: 'Disqualified Doe',
+      firstname: 'Disqualified',
+      disqualified: true,
+      disqualification_reason: 'Not a good fit'
+    };
+
+    beforeEach(() => {
+      // Create test candidates directory structure
+      const candidatesDir = path.join(testDir, 'candidates');
+      fs.mkdirSync(candidatesDir, { recursive: true });
+      
+      // Create qualified candidate
+      const qualifiedCandidateDir = path.join(candidatesDir, 'qualified@example.com');
+      fs.mkdirSync(qualifiedCandidateDir);
+      fs.writeFileSync(path.join(qualifiedCandidateDir, 'workable-index.json'), JSON.stringify(qualifiedCandidate, null, 2));
+      fs.writeFileSync(path.join(qualifiedCandidateDir, '0-PROFILE.md'), '# Qualified Candidate');
+      
+      // Create disqualified candidate
+      const disqualifiedCandidateDir = path.join(candidatesDir, 'disqualified@example.com');
+      fs.mkdirSync(disqualifiedCandidateDir);
+      fs.writeFileSync(path.join(disqualifiedCandidateDir, 'workable-index.json'), JSON.stringify(disqualifiedCandidate, null, 2));
+      fs.writeFileSync(path.join(disqualifiedCandidateDir, '0-PROFILE.md'), '# Disqualified Candidate');
+      fs.writeFileSync(path.join(disqualifiedCandidateDir, '0-RESUME.pdf'), 'PDF content');
+    });
+
+    it('should move disqualified candidates to destination directory', async () => {
+      const moveToDir = path.join(testDir, 'disqualified');
+      
+      await candidateManager.moveDisqualifiedCandidates(testDir, moveToDir);
+
+      // Verify qualified candidate stays in original location
+      const qualifiedDir = path.join(testDir, 'candidates', 'qualified@example.com');
+      expect(fs.existsSync(qualifiedDir)).toBe(true);
+      expect(fs.existsSync(path.join(qualifiedDir, 'workable-index.json'))).toBe(true);
+
+      // Verify disqualified candidate was moved
+      const originalDisqualifiedDir = path.join(testDir, 'candidates', 'disqualified@example.com');
+      const movedDisqualifiedDir = path.join(moveToDir, 'disqualified@example.com');
+      
+      expect(fs.existsSync(originalDisqualifiedDir)).toBe(false); // Should be removed from original location
+      expect(fs.existsSync(movedDisqualifiedDir)).toBe(true); // Should exist in new location
+      expect(fs.existsSync(path.join(movedDisqualifiedDir, 'workable-index.json'))).toBe(true);
+      expect(fs.existsSync(path.join(movedDisqualifiedDir, '0-PROFILE.md'))).toBe(true);
+      expect(fs.existsSync(path.join(movedDisqualifiedDir, '0-RESUME.pdf'))).toBe(true);
+
+      // Verify content is preserved
+      const movedData = JSON.parse(fs.readFileSync(path.join(movedDisqualifiedDir, 'workable-index.json'), 'utf-8'));
+      expect(movedData.email).toBe('disqualified@example.com');
+      expect(movedData.disqualified).toBe(true);
+    });
+
+    it('should overwrite existing files in destination', async () => {
+      const moveToDir = path.join(testDir, 'disqualified');
+      
+      // Pre-create destination with existing candidate
+      fs.mkdirSync(path.join(moveToDir, 'disqualified@example.com'), { recursive: true });
+      fs.writeFileSync(path.join(moveToDir, 'disqualified@example.com', 'old-file.txt'), 'Old content');
+      fs.writeFileSync(path.join(moveToDir, 'disqualified@example.com', 'workable-index.json'), '{"old": "data"}');
+
+      await candidateManager.moveDisqualifiedCandidates(testDir, moveToDir);
+
+      const movedDir = path.join(moveToDir, 'disqualified@example.com');
+      
+      // Old file should still exist
+      expect(fs.existsSync(path.join(movedDir, 'old-file.txt'))).toBe(true);
+      
+      // New files should be present and overwrite existing ones
+      const movedData = JSON.parse(fs.readFileSync(path.join(movedDir, 'workable-index.json'), 'utf-8'));
+      expect(movedData.email).toBe('disqualified@example.com');
+      expect(movedData.disqualified).toBe(true);
+      expect(movedData.old).toBeUndefined(); // Old data should be overwritten
+    });
+
+    it('should handle missing candidates directory gracefully', async () => {
+      const emptyTestDir = path.join(testDir, 'empty');
+      fs.mkdirSync(emptyTestDir);
+      const moveToDir = path.join(testDir, 'disqualified');
+      
+      await candidateManager.moveDisqualifiedCandidates(emptyTestDir, moveToDir);
+
+      expect(console.log).toHaveBeenCalledWith('No candidates directory found');
+    });
+
+    it('should handle candidates with invalid JSON gracefully', async () => {
+      const candidatesDir = path.join(testDir, 'candidates');
+      
+      // Create candidate with invalid JSON
+      const invalidCandidateDir = path.join(candidatesDir, 'invalid@example.com');
+      fs.mkdirSync(invalidCandidateDir);
+      fs.writeFileSync(path.join(invalidCandidateDir, 'workable-index.json'), 'invalid json');
+      
+      const moveToDir = path.join(testDir, 'disqualified');
+      
+      await candidateManager.moveDisqualifiedCandidates(testDir, moveToDir);
+
+      expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('Failed to process candidate invalid@example.com'));
+    });
+  });
 });
