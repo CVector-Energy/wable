@@ -264,10 +264,8 @@ describe('WorkableAPI', () => {
     });
   });
 
-  describe('getCandidatesWithCallback', () => {
-    it('should call callback for each page and return total count', async () => {
-      const mockCallback = jest.fn().mockResolvedValue(undefined);
-      
+  describe('generateCandidates', () => {
+    it('should yield candidates for each page', async () => {
       // Mock first page
       const firstPageResponse = {
         data: {
@@ -303,28 +301,26 @@ describe('WorkableAPI', () => {
         .mockResolvedValueOnce(firstPageResponse)
         .mockResolvedValueOnce(secondPageResponse);
 
-      const totalCount = await workableAPI.getCandidatesWithCallback('SE001', mockCallback);
+      const allPages: any[][] = [];
+      for await (const page of workableAPI.generateCandidates('SE001')) {
+        allPages.push(page);
+      }
 
       // Should have called get twice (two pages)
       expect(mockedAxios.get).toHaveBeenCalledTimes(2);
       
-      // Callback should be called twice (once per page)
-      expect(mockCallback).toHaveBeenCalledTimes(2);
-      expect(mockCallback).toHaveBeenNthCalledWith(1, [
+      // Should yield two pages
+      expect(allPages).toHaveLength(2);
+      expect(allPages[0]).toEqual([
         { id: '1', email: 'user1@example.com', name: 'User 1' },
         { id: '2', email: 'user2@example.com', name: 'User 2' }
       ]);
-      expect(mockCallback).toHaveBeenNthCalledWith(2, [
+      expect(allPages[1]).toEqual([
         { id: '3', email: 'user3@example.com', name: 'User 3' }
       ]);
-
-      // Should return total count
-      expect(totalCount).toBe(3);
     });
 
-    it('should handle single page with callback', async () => {
-      const mockCallback = jest.fn().mockResolvedValue(undefined);
-      
+    it('should handle single page', async () => {
       const singlePageResponse = {
         data: {
           candidates: [
@@ -341,19 +337,19 @@ describe('WorkableAPI', () => {
 
       mockedAxios.get.mockResolvedValue(singlePageResponse);
 
-      const totalCount = await workableAPI.getCandidatesWithCallback('SE001', mockCallback);
+      const allPages: any[][] = [];
+      for await (const page of workableAPI.generateCandidates('SE001')) {
+        allPages.push(page);
+      }
 
       expect(mockedAxios.get).toHaveBeenCalledTimes(1);
-      expect(mockCallback).toHaveBeenCalledTimes(1);
-      expect(mockCallback).toHaveBeenCalledWith([
+      expect(allPages).toHaveLength(1);
+      expect(allPages[0]).toEqual([
         { id: '1', email: 'user1@example.com', name: 'User 1' }
       ]);
-      expect(totalCount).toBe(1);
     });
 
     it('should include updated_after parameter when provided', async () => {
-      const mockCallback = jest.fn().mockResolvedValue(undefined);
-      
       const mockResponse = {
         data: {
           candidates: [],
@@ -368,7 +364,11 @@ describe('WorkableAPI', () => {
 
       mockedAxios.get.mockResolvedValue(mockResponse);
 
-      await workableAPI.getCandidatesWithCallback('SE001', mockCallback, '2023-12-01T00:00:00Z');
+      // Consume the generator
+      const allPages: any[][] = [];
+      for await (const page of workableAPI.generateCandidates('SE001', '2023-12-01T00:00:00Z')) {
+        allPages.push(page);
+      }
 
       expect(mockedAxios.get).toHaveBeenCalledWith(
         'https://test-company.workable.com/spi/v3/jobs/SE001/candidates?limit=100&updated_after=2023-12-01T00%3A00%3A00Z',
@@ -379,6 +379,30 @@ describe('WorkableAPI', () => {
           }
         }
       );
+    });
+
+    it('should handle empty pages gracefully', async () => {
+      const emptyPageResponse = {
+        data: {
+          candidates: [],
+          paging: { next: null }
+        },
+        headers: {
+          'x-rate-limit-limit': '10',
+          'x-rate-limit-remaining': '9',
+          'x-rate-limit-reset': '1640995200'
+        }
+      };
+
+      mockedAxios.get.mockResolvedValue(emptyPageResponse);
+
+      const allPages: any[][] = [];
+      for await (const page of workableAPI.generateCandidates('SE001')) {
+        allPages.push(page);
+      }
+
+      // Should not yield any pages for empty results
+      expect(allPages).toHaveLength(0);
     });
   });
 });

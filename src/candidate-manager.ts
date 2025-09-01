@@ -28,15 +28,6 @@ export class CandidateManager {
     }
   }
 
-  private async getFileModificationTime(filePath: string): Promise<Date | null> {
-    try {
-      const stats = await stat(filePath);
-      return stats.mtime;
-    } catch {
-      return null;
-    }
-  }
-
   private async shouldUpdateCandidate(candidate: WorkableCandidate, candidateDir: string): Promise<boolean> {
     const indexFilePath = path.join(candidateDir, 'workable-index.json');
     
@@ -176,35 +167,34 @@ export class CandidateManager {
     console.log(`Downloading candidates for job: ${jobShortcode}`);
     
     const detailJobs: Promise<void>[] = [];
+    let totalCandidates = 0;
     
-    // Process candidates as each page loads
-    const totalCandidates = await this.workableAPI.getCandidatesWithCallback(
-      jobShortcode,
-      async (candidates) => {
-        for (const candidate of candidates) {
-          const sanitizedEmail = this.sanitizeEmail(candidate.email || candidate.id);
-          const candidateDir = path.join(baseDir || process.cwd(), 'candidates', sanitizedEmail);
+    // Process candidates as each page loads using async generator
+    for await (const candidates of this.workableAPI.generateCandidates(jobShortcode, updatedAfter)) {
+      for (const candidate of candidates) {
+        const sanitizedEmail = this.sanitizeEmail(candidate.email || candidate.id);
+        const candidateDir = path.join(baseDir || process.cwd(), 'candidates', sanitizedEmail);
+        
+        await this.ensureDirectoryExists(candidateDir);
+        
+        const shouldUpdate = await this.shouldUpdateCandidate(candidate, candidateDir);
+        
+        if (shouldUpdate) {
+          console.log(`Updating candidate: ${candidate.email}`);
           
-          await this.ensureDirectoryExists(candidateDir);
+          // Write index file immediately
+          const indexFilePath = path.join(candidateDir, 'workable-index.json');
+          await writeFile(indexFilePath, JSON.stringify(candidate, null, 2));
           
-          const shouldUpdate = await this.shouldUpdateCandidate(candidate, candidateDir);
-          
-          if (shouldUpdate) {
-            console.log(`Updating candidate: ${candidate.email}`);
-            
-            // Write index file immediately
-            const indexFilePath = path.join(candidateDir, 'workable-index.json');
-            await writeFile(indexFilePath, JSON.stringify(candidate, null, 2));
-            
-            // Queue the detail processing job
-            detailJobs.push(this.processCandidateDetails(candidate, candidateDir));
-          } else {
-            console.log(`Skipping candidate (up to date): ${candidate.email}`);
-          }
+          // Queue the detail processing job
+          detailJobs.push(this.processCandidateDetails(candidate, candidateDir));
+        } else {
+          console.log(`Skipping candidate (up to date): ${candidate.email}`);
         }
-      },
-      updatedAfter
-    );
+        
+        totalCandidates++;
+      }
+    }
     
     // Wait for all detail processing to complete
     console.log(`Processing details for ${detailJobs.length} candidates...`);

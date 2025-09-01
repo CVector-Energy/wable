@@ -26,7 +26,7 @@ describe('CandidateManager', () => {
     
     mockWorkableAPI = {
       getCandidates: jest.fn(),
-      getCandidatesWithCallback: jest.fn(),
+      generateCandidates: jest.fn(),
       getCandidateById: jest.fn(),
       downloadFile: jest.fn(),
     } as any;
@@ -107,10 +107,9 @@ describe('CandidateManager', () => {
     };
 
     beforeEach(() => {
-      // Mock the callback-based pagination behavior
-      mockWorkableAPI.getCandidatesWithCallback.mockImplementation(async (jobShortcode, callback) => {
-        await callback([mockCandidate]);
-        return 1; // Return total count
+      // Mock the async generator behavior
+      mockWorkableAPI.generateCandidates.mockImplementation(async function* () {
+        yield [mockCandidate];
       });
       
       mockWorkableAPI.getCandidateById.mockResolvedValue(mockCandidateDetail);
@@ -120,7 +119,7 @@ describe('CandidateManager', () => {
     it('should download new candidates', async () => {
       await candidateManager.downloadCandidates('SE001', testDir);
 
-      expect(mockWorkableAPI.getCandidatesWithCallback).toHaveBeenCalledWith('SE001', expect.any(Function), undefined);
+      expect(mockWorkableAPI.generateCandidates).toHaveBeenCalledWith('SE001', undefined);
       expect(mockWorkableAPI.getCandidateById).toHaveBeenCalledWith('candidate123');
       expect(mockWorkableAPI.downloadFile).toHaveBeenCalledWith('https://example.com/resume.pdf');
 
@@ -166,7 +165,7 @@ describe('CandidateManager', () => {
 
       await candidateManager.downloadCandidates('SE001', testDir);
 
-      expect(mockWorkableAPI.getCandidatesWithCallback).toHaveBeenCalledWith('SE001', expect.any(Function), undefined);
+      expect(mockWorkableAPI.generateCandidates).toHaveBeenCalledWith('SE001', undefined);
       expect(mockWorkableAPI.getCandidateById).not.toHaveBeenCalled();
       expect(console.log).toHaveBeenCalledWith('Skipping candidate (up to date): john.doe@example.com');
     });
@@ -184,9 +183,8 @@ describe('CandidateManager', () => {
         cover_letter: null
       };
 
-      mockWorkableAPI.getCandidatesWithCallback.mockImplementation(async (jobShortcode, callback) => {
-        await callback([candidateWithoutFiles]);
-        return 1;
+      mockWorkableAPI.generateCandidates.mockImplementation(async function* () {
+        yield [candidateWithoutFiles];
       });
       
       mockWorkableAPI.getCandidateById.mockResolvedValue(candidateDetailWithoutFiles);

@@ -138,13 +138,11 @@ export class WorkableAPI {
     };
   }
 
-  async getCandidatesWithCallback(
+  async *generateCandidates(
     jobShortcode: string, 
-    onPageLoaded: (candidates: WorkableCandidate[]) => Promise<void>, 
     updatedAfter?: string
-  ): Promise<number> {
+  ): AsyncGenerator<WorkableCandidate[], void, unknown> {
     let nextUrl: string | null = null;
-    let totalCandidates = 0;
     
     const params = new URLSearchParams();
     params.append('limit', '100'); // maximum page size
@@ -155,7 +153,7 @@ export class WorkableAPI {
     const initialUrl = `${this.baseUrl}/jobs/${jobShortcode}/candidates?${params.toString()}`;
     nextUrl = initialUrl;
     
-    // Fetch all pages and process each immediately
+    // Fetch all pages and yield each page as it loads
     while (nextUrl) {
       const pageResponse = await this.makeRequest(async () => {
         const response = await axios.get(nextUrl!, {
@@ -168,22 +166,18 @@ export class WorkableAPI {
         return response.data;
       });
       
-      // Process this page immediately
+      // Yield this page of candidates
       if (pageResponse.candidates.length > 0) {
-        await onPageLoaded(pageResponse.candidates);
-        totalCandidates += pageResponse.candidates.length;
+        yield pageResponse.candidates;
       }
       
       // Check if there's a next page
       nextUrl = pageResponse.paging?.next || null;
       
       if (nextUrl) {
-        console.log(`Processed ${pageResponse.candidates.length} candidates, continuing to next page...`);
+        console.log(`Fetched ${pageResponse.candidates.length} candidates, continuing to next page...`);
       }
     }
-    
-    console.log(`Processed total of ${totalCandidates} candidates across all pages`);
-    return totalCandidates;
   }
 
   async getCandidateById(candidateId: string): Promise<WorkableCandidateDetail> {
