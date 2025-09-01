@@ -81,6 +81,9 @@ yarn dev --get-candidates --shortcode SE001 --subdomain your-company --token you
 - `0-RESUME.pdf`: Resume file (if available, downloaded from S3)
 - `0-COVER.txt`: Cover letter text (if provided)
 
+**Complete Data Retrieval:**
+The application automatically fetches all pages of candidates (using a limit of 100 per page for efficiency) to ensure no candidates are missed.
+
 **Smart Updates:**
 The application checks the `updated_at` timestamp and only downloads candidates that are new or have been updated since the last download.
 

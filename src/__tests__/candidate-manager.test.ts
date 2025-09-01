@@ -106,6 +106,7 @@ describe('CandidateManager', () => {
     };
 
     beforeEach(() => {
+      // Mock the pagination behavior - getCandidates now fetches all pages internally
       mockWorkableAPI.getCandidates.mockResolvedValue({
         candidates: [mockCandidate],
         paging: { next: null }

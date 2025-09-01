@@ -93,22 +93,49 @@ export class WorkableAPI {
   }
 
   async getCandidates(jobShortcode: string, updatedAfter?: string): Promise<WorkableCandidatesResponse> {
-    return this.makeRequest(async () => {
-      const params = new URLSearchParams();
-      if (updatedAfter) {
-        params.append('updated_after', updatedAfter);
-      }
-      
-      const url = `${this.baseUrl}/jobs/${jobShortcode}/candidates${params.toString() ? `?${params.toString()}` : ''}`;
-      const response = await axios.get(url, {
-        headers: {
-          'Authorization': `Bearer ${this.apiToken}`,
-          'Content-Type': 'application/json'
-        }
+    const allCandidates: any[] = [];
+    let nextUrl: string | null = null;
+    
+    const params = new URLSearchParams();
+    params.append('limit', '100'); // maximum page size
+    if (updatedAfter) {
+      params.append('updated_after', updatedAfter);
+    }
+    
+    const initialUrl = `${this.baseUrl}/jobs/${jobShortcode}/candidates?${params.toString()}`;
+    nextUrl = initialUrl;
+    
+    // Fetch all pages
+    while (nextUrl) {
+      const pageResponse = await this.makeRequest(async () => {
+        const response = await axios.get(nextUrl!, {
+          headers: {
+            'Authorization': `Bearer ${this.apiToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        this.updateRateLimitInfo(response.headers);
+        return response.data;
       });
-      this.updateRateLimitInfo(response.headers);
-      return response.data;
-    });
+      
+      // Add candidates from this page
+      allCandidates.push(...pageResponse.candidates);
+      
+      // Check if there's a next page
+      nextUrl = pageResponse.paging?.next || null;
+      
+      if (nextUrl) {
+        console.log(`Fetched ${pageResponse.candidates.length} candidates, continuing to next page...`);
+      }
+    }
+    
+    console.log(`Fetched total of ${allCandidates.length} candidates across all pages`);
+    
+    // Return combined result in the same format as the original response
+    return {
+      candidates: allCandidates,
+      paging: { next: null } // No next page since we fetched all
+    };
   }
 
   async getCandidateById(candidateId: string): Promise<WorkableCandidateDetail> {

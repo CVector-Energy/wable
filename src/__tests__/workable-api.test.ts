@@ -137,4 +137,130 @@ describe('WorkableAPI', () => {
       expect(mockedAxios.get).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('getCandidates', () => {
+    it('should fetch all pages of candidates', async () => {
+      // Mock first page
+      const firstPageResponse = {
+        data: {
+          candidates: [
+            { id: '1', email: 'user1@example.com', name: 'User 1' },
+            { id: '2', email: 'user2@example.com', name: 'User 2' }
+          ],
+          paging: { next: 'https://test-company.workable.com/spi/v3/jobs/SE001/candidates?limit=100&after=cursor123' }
+        },
+        headers: {
+          'x-rate-limit-limit': '10',
+          'x-rate-limit-remaining': '9',
+          'x-rate-limit-reset': '1640995200'
+        }
+      };
+
+      // Mock second page (final page)
+      const secondPageResponse = {
+        data: {
+          candidates: [
+            { id: '3', email: 'user3@example.com', name: 'User 3' }
+          ],
+          paging: { next: null }
+        },
+        headers: {
+          'x-rate-limit-limit': '10',
+          'x-rate-limit-remaining': '8',
+          'x-rate-limit-reset': '1640995200'
+        }
+      };
+
+      mockedAxios.get
+        .mockResolvedValueOnce(firstPageResponse)
+        .mockResolvedValueOnce(secondPageResponse);
+
+      const result = await workableAPI.getCandidates('SE001');
+
+      // Should have called get twice (two pages)
+      expect(mockedAxios.get).toHaveBeenCalledTimes(2);
+      
+      // First call should be to the initial URL with limit=100
+      expect(mockedAxios.get).toHaveBeenNthCalledWith(1,
+        'https://test-company.workable.com/spi/v3/jobs/SE001/candidates?limit=100',
+        {
+          headers: {
+            'Authorization': 'Bearer test-token',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      // Second call should be to the next URL
+      expect(mockedAxios.get).toHaveBeenNthCalledWith(2,
+        'https://test-company.workable.com/spi/v3/jobs/SE001/candidates?limit=100&after=cursor123',
+        {
+          headers: {
+            'Authorization': 'Bearer test-token',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      // Result should contain all candidates from both pages
+      expect(result.candidates).toHaveLength(3);
+      expect(result.candidates[0].id).toBe('1');
+      expect(result.candidates[1].id).toBe('2');
+      expect(result.candidates[2].id).toBe('3');
+      expect(result.paging.next).toBeNull();
+    });
+
+    it('should handle single page of candidates', async () => {
+      const singlePageResponse = {
+        data: {
+          candidates: [
+            { id: '1', email: 'user1@example.com', name: 'User 1' }
+          ],
+          paging: { next: null }
+        },
+        headers: {
+          'x-rate-limit-limit': '10',
+          'x-rate-limit-remaining': '9',
+          'x-rate-limit-reset': '1640995200'
+        }
+      };
+
+      mockedAxios.get.mockResolvedValue(singlePageResponse);
+
+      const result = await workableAPI.getCandidates('SE001');
+
+      expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+      expect(result.candidates).toHaveLength(1);
+      expect(result.candidates[0].id).toBe('1');
+      expect(result.paging.next).toBeNull();
+    });
+
+    it('should include updated_after parameter when provided', async () => {
+      const mockResponse = {
+        data: {
+          candidates: [],
+          paging: { next: null }
+        },
+        headers: {
+          'x-rate-limit-limit': '10',
+          'x-rate-limit-remaining': '9',
+          'x-rate-limit-reset': '1640995200'
+        }
+      };
+
+      mockedAxios.get.mockResolvedValue(mockResponse);
+
+      await workableAPI.getCandidates('SE001', '2023-12-01T00:00:00Z');
+
+      expect(mockedAxios.get).toHaveBeenCalledWith(
+        'https://test-company.workable.com/spi/v3/jobs/SE001/candidates?limit=100&updated_after=2023-12-01T00%3A00%3A00Z',
+        {
+          headers: {
+            'Authorization': 'Bearer test-token',
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+    });
+  });
 });
