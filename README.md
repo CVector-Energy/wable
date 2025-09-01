@@ -84,6 +84,9 @@ yarn dev --get-candidates --shortcode SE001 --subdomain your-company --token you
 **Complete Data Retrieval:**
 The application automatically fetches all pages of candidates (using a limit of 100 per page for efficiency) to ensure no candidates are missed.
 
+**Streaming Processing:**
+Candidate details are downloaded immediately as each page of the index loads, rather than waiting for all pages to complete first. This provides faster feedback and better performance for large candidate lists.
+
 **Smart Updates:**
 The application checks the `updated_at` timestamp and only downloads candidates that are new or have been updated since the last download.
 

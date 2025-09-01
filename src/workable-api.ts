@@ -1,5 +1,5 @@
 import axios, { RawAxiosResponseHeaders, AxiosResponseHeaders } from 'axios';
-import { WorkableJobsResponse, WorkableCandidatesResponse, WorkableCandidateDetail, WorkableJobStagesResponse } from './types';
+import { WorkableCandidate, WorkableJobsResponse, WorkableCandidatesResponse, WorkableCandidateDetail, WorkableJobStagesResponse } from './types';
 
 interface RateLimitInfo {
   limit: number;
@@ -136,6 +136,54 @@ export class WorkableAPI {
       candidates: allCandidates,
       paging: { next: null } // No next page since we fetched all
     };
+  }
+
+  async getCandidatesWithCallback(
+    jobShortcode: string, 
+    onPageLoaded: (candidates: WorkableCandidate[]) => Promise<void>, 
+    updatedAfter?: string
+  ): Promise<number> {
+    let nextUrl: string | null = null;
+    let totalCandidates = 0;
+    
+    const params = new URLSearchParams();
+    params.append('limit', '100'); // maximum page size
+    if (updatedAfter) {
+      params.append('updated_after', updatedAfter);
+    }
+    
+    const initialUrl = `${this.baseUrl}/jobs/${jobShortcode}/candidates?${params.toString()}`;
+    nextUrl = initialUrl;
+    
+    // Fetch all pages and process each immediately
+    while (nextUrl) {
+      const pageResponse = await this.makeRequest(async () => {
+        const response = await axios.get(nextUrl!, {
+          headers: {
+            'Authorization': `Bearer ${this.apiToken}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        this.updateRateLimitInfo(response.headers);
+        return response.data;
+      });
+      
+      // Process this page immediately
+      if (pageResponse.candidates.length > 0) {
+        await onPageLoaded(pageResponse.candidates);
+        totalCandidates += pageResponse.candidates.length;
+      }
+      
+      // Check if there's a next page
+      nextUrl = pageResponse.paging?.next || null;
+      
+      if (nextUrl) {
+        console.log(`Processed ${pageResponse.candidates.length} candidates, continuing to next page...`);
+      }
+    }
+    
+    console.log(`Processed total of ${totalCandidates} candidates across all pages`);
+    return totalCandidates;
   }
 
   async getCandidateById(candidateId: string): Promise<WorkableCandidateDetail> {

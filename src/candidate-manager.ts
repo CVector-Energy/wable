@@ -175,36 +175,41 @@ export class CandidateManager {
   async downloadCandidates(jobShortcode: string, baseDir?: string, updatedAfter?: string): Promise<void> {
     console.log(`Downloading candidates for job: ${jobShortcode}`);
     
-    const candidatesResponse = await this.workableAPI.getCandidates(jobShortcode, updatedAfter);
     const detailJobs: Promise<void>[] = [];
     
-    // First pass: Process candidate index and queue detail jobs
-    for (const candidate of candidatesResponse.candidates) {
-      const sanitizedEmail = this.sanitizeEmail(candidate.email);
-      const candidateDir = path.join(baseDir || process.cwd(), 'candidates', sanitizedEmail);
-      
-      await this.ensureDirectoryExists(candidateDir);
-      
-      const shouldUpdate = await this.shouldUpdateCandidate(candidate, candidateDir);
-      
-      if (shouldUpdate) {
-        console.log(`Updating candidate: ${candidate.email}`);
-        
-        // Write index file immediately (non-blocking for iteration)
-        const indexFilePath = path.join(candidateDir, 'workable-index.json');
-        await writeFile(indexFilePath, JSON.stringify(candidate, null, 2));
-        
-        // Queue the detail processing job
-        detailJobs.push(this.processCandidateDetails(candidate, candidateDir));
-      } else {
-        console.log(`Skipping candidate (up to date): ${candidate.email}`);
-      }
-    }
+    // Process candidates as each page loads
+    const totalCandidates = await this.workableAPI.getCandidatesWithCallback(
+      jobShortcode,
+      async (candidates) => {
+        for (const candidate of candidates) {
+          const sanitizedEmail = this.sanitizeEmail(candidate.email || candidate.id);
+          const candidateDir = path.join(baseDir || process.cwd(), 'candidates', sanitizedEmail);
+          
+          await this.ensureDirectoryExists(candidateDir);
+          
+          const shouldUpdate = await this.shouldUpdateCandidate(candidate, candidateDir);
+          
+          if (shouldUpdate) {
+            console.log(`Updating candidate: ${candidate.email}`);
+            
+            // Write index file immediately
+            const indexFilePath = path.join(candidateDir, 'workable-index.json');
+            await writeFile(indexFilePath, JSON.stringify(candidate, null, 2));
+            
+            // Queue the detail processing job
+            detailJobs.push(this.processCandidateDetails(candidate, candidateDir));
+          } else {
+            console.log(`Skipping candidate (up to date): ${candidate.email}`);
+          }
+        }
+      },
+      updatedAfter
+    );
     
-    // Second pass: Wait for all detail processing to complete
+    // Wait for all detail processing to complete
     console.log(`Processing details for ${detailJobs.length} candidates...`);
     await Promise.all(detailJobs);
     
-    console.log(`Processed ${candidatesResponse.candidates.length} candidates`);
+    console.log(`Processed ${totalCandidates} candidates`);
   }
 }

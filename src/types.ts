@@ -51,7 +51,7 @@ export interface WorkableCandidate {
   profile_url: string;
   address: string;
   phone: string;
-  email: string;
+  email: string | null;
   domain: string;
   created_at: string;
   updated_at: string;
