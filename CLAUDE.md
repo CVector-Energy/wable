@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 Build and run commands:
+
 ```bash
 # Development (with TypeScript)
 yarn dev --get-jobs --subdomain <subdomain> --token <token>
@@ -39,7 +40,7 @@ This is a TypeScript CLI application for interacting with the Workable API. The 
 - **Rate Limiting**: Respects Workable API rate limits (10 requests per 10 seconds for account tokens) with automatic queuing and waiting
 - **Error Handling**: Comprehensive error handling with axios error checking, rate limit detection (429 errors), and user-friendly messages
 - **Smart Updates**: Uses timestamp comparison (`updated_at` field) to only download candidates when they've been updated
-- **File Organization**: 
+- **File Organization**:
   - Candidates: `candidates/{email}/` with files (`workable-index.json`, `workable-show.json`, `0-PROFILE.md`, `0-RESUME.pdf`, `0-COVER.txt`)
   - Jobs: `jobs/{shortcode}/` with files (`job-index.json`, `stages.json`, `stages.md`)
 - **API Integration**: Four main API endpoints: jobs list, job candidates, individual candidate details, and job stages

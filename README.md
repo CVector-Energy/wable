@@ -37,13 +37,15 @@ yarn dev --get-jobs --subdomain your-company --token your-api-token --updated-af
 ```
 
 **Parameters:**
+
 - `--get-jobs`: Download all jobs with stage information
-- `--subdomain <subdomain>`: Your Workable subdomain (required)  
+- `--subdomain <subdomain>`: Your Workable subdomain (required)
 - `--token <token>`: Your Workable API token (required)
 - `--base-dir <directory>`: Output directory (optional, defaults to current directory)
 - `--updated-after <date>`: Only download jobs updated after this date (ISO format, optional)
 
 **What gets created:**
+
 ```
 jobs/
 ├── SE001/
@@ -68,9 +70,10 @@ yarn dev --get-candidates --shortcode SE001 --subdomain your-company --token you
 ```
 
 **Parameters:**
+
 - `--get-candidates`: Download candidates for a specific job
 - `--shortcode <jobShortcode>`: Job shortcode (required when using --get-candidates)
-- `--subdomain <subdomain>`: Your Workable subdomain (required)  
+- `--subdomain <subdomain>`: Your Workable subdomain (required)
 - `--token <token>`: Your Workable API token (required)
 - `--updated-after <date>`: Only download candidates updated after this date (ISO format, optional)
 
@@ -83,14 +86,16 @@ yarn dev --move-disqualified-candidates-to ./disqualified --subdomain your-compa
 ```
 
 **Parameters:**
+
 - `--move-disqualified-candidates-to <directory>`: Move disqualified candidates to specified directory
 - `--base-dir <directory>`: Source directory containing candidates (optional, defaults to current directory)
-- `--subdomain <subdomain>`: Your Workable subdomain (required)  
+- `--subdomain <subdomain>`: Your Workable subdomain (required)
 - `--token <token>`: Your Workable API token (required)
 
 This command reads candidate metadata from `workable-index.json` files and moves candidates where `disqualified` is `true` to the specified directory. If the destination already contains a candidate with the same email, the files will be overwritten.
 
 **What gets downloaded:**
+
 - Creates a directory for each candidate using their email address under `candidates/`
 - `workable-index.json`: Basic candidate information from the candidates list
 - `workable-show.json`: Detailed candidate information from individual candidate API call
@@ -108,6 +113,7 @@ Uses async generators to stream candidate pages as they load, starting detail pr
 The application checks the `updated_at` timestamp and only downloads candidates that are new or have been updated since the last download.
 
 **Example directory structure:**
+
 ```
 candidates/
 ├── john.doe@example.com/
@@ -149,6 +155,7 @@ yarn start
 ## API Reference
 
 This application uses the [Workable API v3](https://workable.readme.io/reference) endpoints:
+
 - [Jobs](https://workable.readme.io/reference/jobs) - List available jobs
 - [Job Candidates](https://workable.readme.io/reference/job-candidates-index) - List candidates for a job
 - [Candidate Details](https://workable.readme.io/reference/job-candidates-show) - Get detailed candidate information
@@ -156,6 +163,7 @@ This application uses the [Workable API v3](https://workable.readme.io/reference
 ## Testing
 
 The application includes comprehensive unit tests covering:
+
 - Workable API client functionality
 - Candidate download and file management
 - Timestamp comparison and smart updates
@@ -163,6 +171,7 @@ The application includes comprehensive unit tests covering:
 - Error handling for network and API errors
 
 Run tests with:
+
 ```bash
 yarn test
 ```

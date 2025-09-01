@@ -1,15 +1,15 @@
-import { WorkableAPI } from '../workable-api';
+import { WorkableAPI } from "../workable-api";
 
-jest.mock('../workable-api');
+jest.mock("../workable-api");
 const MockedWorkableAPI = WorkableAPI as jest.MockedClass<typeof WorkableAPI>;
 
-describe('CLI Application', () => {
+describe("CLI Application", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.spyOn(console, 'log').mockImplementation();
-    jest.spyOn(console, 'error').mockImplementation();
-    jest.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('process.exit');
+    jest.spyOn(console, "log").mockImplementation();
+    jest.spyOn(console, "error").mockImplementation();
+    jest.spyOn(process, "exit").mockImplementation(() => {
+      throw new Error("process.exit");
     });
   });
 
@@ -17,35 +17,49 @@ describe('CLI Application', () => {
     jest.restoreAllMocks();
   });
 
-  it('should display jobs when --get-jobs is used with valid credentials', async () => {
+  it("should display jobs when --get-jobs is used with valid credentials", async () => {
     const mockGetJobs = jest.fn().mockResolvedValue({
       jobs: [
-        { title: 'Software Engineer', shortcode: 'SE001' },
-        { title: 'Product Manager', shortcode: 'PM001' }
+        { title: "Software Engineer", shortcode: "SE001" },
+        { title: "Product Manager", shortcode: "PM001" },
       ],
-      paging: { next: null }
+      paging: { next: null },
     });
 
-    MockedWorkableAPI.mockImplementation(() => ({
-      getJobs: mockGetJobs
-    } as any));
+    MockedWorkableAPI.mockImplementation(
+      () =>
+        ({
+          getJobs: mockGetJobs,
+        }) as any,
+    );
 
-    const { Command } = require('commander');
+    const { Command } = require("commander");
     const program = new Command();
 
-    process.argv = ['node', 'wable', '--get-jobs', '--subdomain', 'test', '--token', 'token123'];
+    process.argv = [
+      "node",
+      "wable",
+      "--get-jobs",
+      "--subdomain",
+      "test",
+      "--token",
+      "token123",
+    ];
 
     await new Promise((resolve) => {
       program
-        .option('--get-jobs', 'Get available jobs from Workable')
-        .option('--subdomain <subdomain>', 'Workable subdomain')
-        .option('--token <token>', 'Workable API token')
+        .option("--get-jobs", "Get available jobs from Workable")
+        .option("--subdomain <subdomain>", "Workable subdomain")
+        .option("--token <token>", "Workable API token")
         .action(async (options: any) => {
           if (options.getJobs) {
-            const workableAPI = new WorkableAPI(options.subdomain, options.token);
+            const workableAPI = new WorkableAPI(
+              options.subdomain,
+              options.token,
+            );
             const response = await workableAPI.getJobs();
-            
-            console.log('Available Jobs:');
+
+            console.log("Available Jobs:");
             response.jobs.forEach((job: any) => {
               console.log(`${job.title} (${job.shortcode})`);
             });
@@ -56,10 +70,10 @@ describe('CLI Application', () => {
       program.parse();
     });
 
-    expect(MockedWorkableAPI).toHaveBeenCalledWith('test', 'token123');
+    expect(MockedWorkableAPI).toHaveBeenCalledWith("test", "token123");
     expect(mockGetJobs).toHaveBeenCalled();
-    expect(console.log).toHaveBeenCalledWith('Available Jobs:');
-    expect(console.log).toHaveBeenCalledWith('Software Engineer (SE001)');
-    expect(console.log).toHaveBeenCalledWith('Product Manager (PM001)');
+    expect(console.log).toHaveBeenCalledWith("Available Jobs:");
+    expect(console.log).toHaveBeenCalledWith("Software Engineer (SE001)");
+    expect(console.log).toHaveBeenCalledWith("Product Manager (PM001)");
   });
 });

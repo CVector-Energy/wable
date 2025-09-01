@@ -1,0 +1,4 @@
+# Ignore artifacts:
+var
+.vscode
+.yarn
