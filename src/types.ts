@@ -101,6 +101,60 @@ export interface WorkableLocation {
   telecommuting: boolean;
 }
 
+export type WorkableCandidateAnswer =
+  | WorkableFreeTextAnswer
+  | WorkableShortTextAnswer
+  | WorkableBooleanAnswer
+  | WorkableMultipleChoiceAnswer
+  | WorkableDropdownAnswer
+  | WorkableDateAnswer
+  | WorkableNumericAnswer
+  | WorkableFileAnswer;
+
+export interface WorkableFreeTextAnswer {
+  question_key: string;
+  body: string;
+}
+
+export interface WorkableShortTextAnswer {
+  question_key: string;
+  body: string;
+}
+
+export interface WorkableBooleanAnswer {
+  question_key: string;
+  checked: boolean;
+}
+
+export interface WorkableMultipleChoiceAnswer {
+  question_key: string;
+  choices: string[];
+}
+
+export interface WorkableDropdownAnswer {
+  question_key: string;
+  choices: string[];
+}
+
+export interface WorkableDateAnswer {
+  question_key: string;
+  date: string;
+}
+
+export interface WorkableNumericAnswer {
+  question_key: string;
+  value: number;
+}
+
+export interface WorkableFileAnswer {
+  question_key: string;
+  file_url?: string;
+  file?: {
+    name: string;
+    data: string;
+  };
+}
+
 export interface WorkableCandidateDetail extends WorkableCandidate {
   image_url: string | null;
   summary: string;
@@ -109,8 +163,7 @@ export interface WorkableCandidateDetail extends WorkableCandidate {
   skills: string[];
   tags: string[];
   social_profiles: WorkableSocialProfile[];
-  attachments: any[];
-  answers: any[];
+  answers: WorkableCandidateAnswer[];
   location: WorkableLocation;
   stage_kind: string;
   withdrew: boolean;

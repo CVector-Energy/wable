@@ -46,7 +46,7 @@ yarn dev --get-jobs --subdomain your-company --token your-api-token --updated-af
 
 **What gets created:**
 
-```
+```text
 jobs/
 ├── SE001/
 │   ├── job-index.json     # Complete job information
@@ -114,7 +114,7 @@ The application checks the `updated_at` timestamp and only downloads candidates 
 
 **Example directory structure:**
 
-```
+```text
 candidates/
 ├── john.doe@example.com/
 │   ├── workable-index.json

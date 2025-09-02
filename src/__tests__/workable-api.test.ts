@@ -1,4 +1,5 @@
 import axios from "axios";
+import { WorkableCandidate } from "../types";
 import { WorkableAPI } from "../workable-api";
 
 jest.mock("axios");
@@ -301,7 +302,7 @@ describe("WorkableAPI", () => {
         .mockResolvedValueOnce(firstPageResponse)
         .mockResolvedValueOnce(secondPageResponse);
 
-      const allPages: any[][] = [];
+      const allPages: WorkableCandidate[][] = [];
       for await (const page of workableAPI.generateCandidates("SE001")) {
         allPages.push(page);
       }
@@ -335,7 +336,7 @@ describe("WorkableAPI", () => {
 
       mockedAxios.get.mockResolvedValue(singlePageResponse);
 
-      const allPages: any[][] = [];
+      const allPages: WorkableCandidate[][] = [];
       for await (const page of workableAPI.generateCandidates("SE001")) {
         allPages.push(page);
       }
@@ -362,8 +363,7 @@ describe("WorkableAPI", () => {
 
       mockedAxios.get.mockResolvedValue(mockResponse);
 
-      // Consume the generator
-      const allPages: any[][] = [];
+      const allPages: WorkableCandidate[][] = [];
       for await (const page of workableAPI.generateCandidates(
         "SE001",
         "2023-12-01T00:00:00Z",
@@ -397,7 +397,7 @@ describe("WorkableAPI", () => {
 
       mockedAxios.get.mockResolvedValue(emptyPageResponse);
 
-      const allPages: any[][] = [];
+      const allPages: WorkableCandidate[][] = [];
       for await (const page of workableAPI.generateCandidates("SE001")) {
         allPages.push(page);
       }

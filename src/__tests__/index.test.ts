@@ -1,3 +1,4 @@
+import { Command } from "commander";
 import { WorkableAPI } from "../workable-api";
 
 jest.mock("../workable-api");
@@ -26,14 +27,8 @@ describe("CLI Application", () => {
       paging: { next: null },
     });
 
-    MockedWorkableAPI.mockImplementation(
-      () =>
-        ({
-          getJobs: mockGetJobs,
-        }) as any,
-    );
+    MockedWorkableAPI.prototype.getJobs = mockGetJobs;
 
-    const { Command } = require("commander");
     const program = new Command();
 
     process.argv = [
@@ -51,7 +46,7 @@ describe("CLI Application", () => {
         .option("--get-jobs", "Get available jobs from Workable")
         .option("--subdomain <subdomain>", "Workable subdomain")
         .option("--token <token>", "Workable API token")
-        .action(async (options: any) => {
+        .action(async (options) => {
           if (options.getJobs) {
             const workableAPI = new WorkableAPI(
               options.subdomain,
@@ -60,7 +55,7 @@ describe("CLI Application", () => {
             const response = await workableAPI.getJobs();
 
             console.log("Available Jobs:");
-            response.jobs.forEach((job: any) => {
+            response.jobs.forEach((job) => {
               console.log(`${job.title} (${job.shortcode})`);
             });
           }

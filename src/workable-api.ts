@@ -17,7 +17,7 @@ export class WorkableAPI {
   private baseUrl: string;
   private apiToken: string;
   private rateLimitInfo: RateLimitInfo | null = null;
-  private requestQueue: Array<() => Promise<any>> = [];
+  private requestQueue: Array<() => Promise<void>> = [];
   private isProcessingQueue = false;
 
   constructor(subdomain: string, apiToken: string) {
@@ -75,9 +75,6 @@ export class WorkableAPI {
     while (this.requestQueue.length > 0) {
       const request = this.requestQueue.shift()!;
       await request();
-
-      // Add a small delay between requests to be conservative
-      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     this.isProcessingQueue = false;
@@ -106,7 +103,7 @@ export class WorkableAPI {
     jobShortcode: string,
     updatedAfter?: string,
   ): Promise<WorkableCandidatesResponse> {
-    const allCandidates: any[] = [];
+    const allCandidates: WorkableCandidate[] = [];
     let nextUrl: string | null = null;
 
     const params = new URLSearchParams();
@@ -121,7 +118,7 @@ export class WorkableAPI {
     // Fetch all pages
     while (nextUrl) {
       const pageResponse = await this.makeRequest(async () => {
-        const response = await axios.get(nextUrl!, {
+        const response = await axios.get<WorkableCandidatesResponse>(nextUrl!, {
           headers: {
             Authorization: `Bearer ${this.apiToken}`,
             "Content-Type": "application/json",

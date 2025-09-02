@@ -5,11 +5,9 @@ import { WorkableAPI } from "../workable-api";
 
 jest.mock("../workable-api");
 
-const MockedWorkableAPI = WorkableAPI as jest.MockedClass<typeof WorkableAPI>;
-
 describe("CandidateManager", () => {
   let candidateManager: CandidateManager;
-  let mockWorkableAPI: jest.Mocked<WorkableAPI>;
+  const mockWorkableAPI = new WorkableAPI("","") as jest.Mocked<WorkableAPI>;
   let testDir: string;
 
   beforeEach(() => {
@@ -32,12 +30,10 @@ describe("CandidateManager", () => {
     );
     fs.mkdirSync(testDir, { recursive: true });
 
-    mockWorkableAPI = {
-      getCandidates: jest.fn(),
-      generateCandidates: jest.fn(),
-      getCandidateById: jest.fn(),
-      downloadFile: jest.fn(),
-    } as any;
+    mockWorkableAPI.getCandidates = jest.fn();
+    mockWorkableAPI.generateCandidates = jest.fn();
+    mockWorkableAPI.getCandidateById = jest.fn();
+    mockWorkableAPI.downloadFile = jest.fn();
 
     candidateManager = new CandidateManager(mockWorkableAPI);
   });
