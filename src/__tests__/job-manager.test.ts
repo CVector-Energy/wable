@@ -7,7 +7,7 @@ jest.mock("../workable-api");
 
 describe("JobManager", () => {
   let jobManager: JobManager;
-  const mockWorkableAPI = new WorkableAPI("","") as jest.Mocked<WorkableAPI>;
+  const mockWorkableAPI = new WorkableAPI("", "") as jest.Mocked<WorkableAPI>;
   let testDir: string;
 
   beforeEach(() => {
