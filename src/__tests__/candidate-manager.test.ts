@@ -176,10 +176,10 @@ describe("CandidateManager", () => {
 
       // Verify experience entries are formatted correctly
       expect(profileContent).toContain(
-        "### Senior Developer at Tech Corp\n**Dec 2021 - Present** | Technology",
+        "### Senior Developer at Tech Corp\n**Jan 2022 - Present** | Technology",
       );
       expect(profileContent).toContain(
-        "### Java Developer at Partners Soft\n**Sep 2024 - Feb 2025**\n",
+        "### Java Developer at Partners Soft\n**Oct 2024 - Mar 2025**\n",
       ); // No industry shown
       expect(profileContent).not.toContain("| null"); // Should never show "| null"
 
@@ -193,6 +193,54 @@ describe("CandidateManager", () => {
         "utf-8",
       );
       expect(coverContent).toBe("I am interested in this position...");
+    });
+
+    it("should format date-only strings correctly without timezone conversion", async () => {
+      // Test that date strings like "2024-10-01" are displayed as "Oct 2024"
+      // regardless of the local timezone (e.g., USA timezones)
+      const candidateWithDates = {
+        ...mockCandidateDetail,
+        experience_entries: [
+          {
+            title: "Software Engineer",
+            company: "Test Co",
+            industry: "Tech",
+            summary: "Test job",
+            start_date: "2024-10-01",
+            end_date: "2024-11-01",
+            current: false,
+          },
+        ],
+        education_entries: [
+          {
+            school: "Test University",
+            degree: "BS Computer Science",
+            field_of_study: "Computer Science",
+            start_date: "2020-09-01",
+            end_date: "2024-05-01",
+          },
+        ],
+      };
+
+      mockWorkableAPI.getCandidateById.mockResolvedValue(candidateWithDates);
+
+      await candidateManager.downloadCandidates("SE001", testDir);
+
+      const candidateDir = path.join(
+        testDir,
+        "candidates",
+        "john.doe@example.com",
+      );
+      const profileContent = fs.readFileSync(
+        path.join(candidateDir, "0-PROFILE.md"),
+        "utf-8",
+      );
+
+      // Verify that October dates show as "Oct" not "Sep"
+      expect(profileContent).toContain("Oct 2024 - Nov 2024");
+
+      // Verify education dates are also formatted correctly
+      expect(profileContent).toContain("Sep 2020 - May 2024");
     });
 
     it("should skip candidates that are up to date", async () => {
