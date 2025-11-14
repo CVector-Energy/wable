@@ -2,3 +2,7 @@
 var
 .vscode
 .yarn
+
+# yarn
+.pnp.cjs
+.pnp.loader.mjs
