@@ -5,7 +5,14 @@ import markdown from "@eslint/markdown";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
-  globalIgnores([".yarn/**", "dist/**", "jest.config.js", "var/**"]),
+  globalIgnores([
+    ".yarn/**",
+    "dist/**",
+    "jest.config.js",
+    "var/**",
+    ".pnp.*",
+    "src/__tests__/globalSetup.js",
+  ]),
   {
     files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
     plugins: { js },
