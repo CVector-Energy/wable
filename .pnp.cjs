@@ -33,7 +33,7 @@ const RAW_RUNTIME_STATE =
           ["@swc/jest", "virtual:5e4e9afa06d484f20696d87ff835c290754cb92213a15fa7db1dc090c87c87eb2e5155f07ec13dda6984aaa1c0324b50497c1428ff9646c2ce899fdce782d874#npm:0.2.39"],\
           ["@types/jest", "npm:30.0.0"],\
           ["@types/node", "npm:20.19.11"],\
-          ["axios", "npm:1.13.5"],\
+          ["axios", "npm:1.15.0"],\
           ["commander", "npm:11.1.0"],\
           ["eslint", "virtual:5e4e9afa06d484f20696d87ff835c290754cb92213a15fa7db1dc090c87c87eb2e5155f07ec13dda6984aaa1c0324b50497c1428ff9646c2ce899fdce782d874#npm:10.0.3"],\
           ["globals", "npm:16.3.0"],\
@@ -2785,13 +2785,13 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["axios", [\
-      ["npm:1.13.5", {\
-        "packageLocation": "./.yarn/cache/axios-npm-1.13.5-ed8865f696-abf468c34f.zip/node_modules/axios/",\
+      ["npm:1.15.0", {\
+        "packageLocation": "./.yarn/cache/axios-npm-1.15.0-9132fa0a61-47e0f860e9.zip/node_modules/axios/",\
         "packageDependencies": [\
-          ["axios", "npm:1.13.5"],\
-          ["follow-redirects", "virtual:ed8865f696cebfbc109886bcd430c823f73cb3daaa6597dac1f006748e0fc10ed81734823f049aec03fadda2608be9aa560f98b843c8321891f307f4a175db89#npm:1.15.11"],\
+          ["axios", "npm:1.15.0"],\
+          ["follow-redirects", "virtual:9132fa0a61efc86c3366c1f4c98c4eaafaefa0c123aca659f85cbce3e47a61c0090e4615b3b10a9c9285534e80db49e04a98baf895cccb5d9c934849464afff0#npm:1.15.11"],\
           ["form-data", "npm:4.0.5"],\
-          ["proxy-from-env", "npm:1.1.0"]\
+          ["proxy-from-env", "npm:2.1.0"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -3846,10 +3846,10 @@ const RAW_RUNTIME_STATE =
         ],\
         "linkType": "SOFT"\
       }],\
-      ["virtual:ed8865f696cebfbc109886bcd430c823f73cb3daaa6597dac1f006748e0fc10ed81734823f049aec03fadda2608be9aa560f98b843c8321891f307f4a175db89#npm:1.15.11", {\
-        "packageLocation": "./.yarn/__virtual__/follow-redirects-virtual-eba31d82f7/0/cache/follow-redirects-npm-1.15.11-ae7b2db266-d301f43054.zip/node_modules/follow-redirects/",\
+      ["virtual:9132fa0a61efc86c3366c1f4c98c4eaafaefa0c123aca659f85cbce3e47a61c0090e4615b3b10a9c9285534e80db49e04a98baf895cccb5d9c934849464afff0#npm:1.15.11", {\
+        "packageLocation": "./.yarn/__virtual__/follow-redirects-virtual-fdd81fa3e5/0/cache/follow-redirects-npm-1.15.11-ae7b2db266-d301f43054.zip/node_modules/follow-redirects/",\
         "packageDependencies": [\
-          ["follow-redirects", "virtual:ed8865f696cebfbc109886bcd430c823f73cb3daaa6597dac1f006748e0fc10ed81734823f049aec03fadda2608be9aa560f98b843c8321891f307f4a175db89#npm:1.15.11"],\
+          ["follow-redirects", "virtual:9132fa0a61efc86c3366c1f4c98c4eaafaefa0c123aca659f85cbce3e47a61c0090e4615b3b10a9c9285534e80db49e04a98baf895cccb5d9c934849464afff0#npm:1.15.11"],\
           ["@types/debug", null],\
           ["debug", null]\
         ],\
@@ -6165,10 +6165,10 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["proxy-from-env", [\
-      ["npm:1.1.0", {\
-        "packageLocation": "./.yarn/cache/proxy-from-env-npm-1.1.0-c13d07f26b-fe7dd8b1bd.zip/node_modules/proxy-from-env/",\
+      ["npm:2.1.0", {\
+        "packageLocation": "./.yarn/cache/proxy-from-env-npm-2.1.0-ce678f045b-ed01729fd4.zip/node_modules/proxy-from-env/",\
         "packageDependencies": [\
-          ["proxy-from-env", "npm:1.1.0"]\
+          ["proxy-from-env", "npm:2.1.0"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -6863,7 +6863,7 @@ const RAW_RUNTIME_STATE =
           ["@swc/jest", "virtual:5e4e9afa06d484f20696d87ff835c290754cb92213a15fa7db1dc090c87c87eb2e5155f07ec13dda6984aaa1c0324b50497c1428ff9646c2ce899fdce782d874#npm:0.2.39"],\
           ["@types/jest", "npm:30.0.0"],\
           ["@types/node", "npm:20.19.11"],\
-          ["axios", "npm:1.13.5"],\
+          ["axios", "npm:1.15.0"],\
           ["commander", "npm:11.1.0"],\
           ["eslint", "virtual:5e4e9afa06d484f20696d87ff835c290754cb92213a15fa7db1dc090c87c87eb2e5155f07ec13dda6984aaa1c0324b50497c1428ff9646c2ce899fdce782d874#npm:10.0.3"],\
           ["globals", "npm:16.3.0"],\
