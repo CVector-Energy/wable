@@ -40,7 +40,7 @@
     "commander": "^11.0.0"
   },
   "resolutions": {
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.1.1",
     "test-exclude": "^8.0.0"
   }
 }
