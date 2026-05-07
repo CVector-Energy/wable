@@ -33,7 +33,7 @@ const RAW_RUNTIME_STATE =
           ["@swc/jest", "virtual:5e4e9afa06d484f20696d87ff835c290754cb92213a15fa7db1dc090c87c87eb2e5155f07ec13dda6984aaa1c0324b50497c1428ff9646c2ce899fdce782d874#npm:0.2.39"],\
           ["@types/jest", "npm:30.0.0"],\
           ["@types/node", "npm:20.19.11"],\
-          ["axios", "npm:1.15.0"],\
+          ["axios", "npm:1.16.0"],\
           ["commander", "npm:11.1.0"],\
           ["eslint", "virtual:5e4e9afa06d484f20696d87ff835c290754cb92213a15fa7db1dc090c87c87eb2e5155f07ec13dda6984aaa1c0324b50497c1428ff9646c2ce899fdce782d874#npm:10.0.3"],\
           ["globals", "npm:16.3.0"],\
@@ -2785,11 +2785,11 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["axios", [\
-      ["npm:1.15.0", {\
-        "packageLocation": "./.yarn/cache/axios-npm-1.15.0-9132fa0a61-47e0f860e9.zip/node_modules/axios/",\
+      ["npm:1.16.0", {\
+        "packageLocation": "./.yarn/cache/axios-npm-1.16.0-77f999ccb9-1c91a5221b.zip/node_modules/axios/",\
         "packageDependencies": [\
-          ["axios", "npm:1.15.0"],\
-          ["follow-redirects", "virtual:9132fa0a61efc86c3366c1f4c98c4eaafaefa0c123aca659f85cbce3e47a61c0090e4615b3b10a9c9285534e80db49e04a98baf895cccb5d9c934849464afff0#npm:1.16.0"],\
+          ["axios", "npm:1.16.0"],\
+          ["follow-redirects", "virtual:77f999ccb93c7a8b1163212330fc2663930702a6310c22e4e44a0943273d572bf2cd007ae086150f8e94e02087a59aa85c3d28f0def8ae1df499b727a5c2330b#npm:1.16.0"],\
           ["form-data", "npm:4.0.5"],\
           ["proxy-from-env", "npm:2.1.0"]\
         ],\
@@ -3846,10 +3846,10 @@ const RAW_RUNTIME_STATE =
         ],\
         "linkType": "SOFT"\
       }],\
-      ["virtual:9132fa0a61efc86c3366c1f4c98c4eaafaefa0c123aca659f85cbce3e47a61c0090e4615b3b10a9c9285534e80db49e04a98baf895cccb5d9c934849464afff0#npm:1.16.0", {\
-        "packageLocation": "./.yarn/__virtual__/follow-redirects-virtual-92441bbe20/0/cache/follow-redirects-npm-1.16.0-816e4f62d9-a1e2900163.zip/node_modules/follow-redirects/",\
+      ["virtual:77f999ccb93c7a8b1163212330fc2663930702a6310c22e4e44a0943273d572bf2cd007ae086150f8e94e02087a59aa85c3d28f0def8ae1df499b727a5c2330b#npm:1.16.0", {\
+        "packageLocation": "./.yarn/__virtual__/follow-redirects-virtual-c86df41732/0/cache/follow-redirects-npm-1.16.0-816e4f62d9-a1e2900163.zip/node_modules/follow-redirects/",\
         "packageDependencies": [\
-          ["follow-redirects", "virtual:9132fa0a61efc86c3366c1f4c98c4eaafaefa0c123aca659f85cbce3e47a61c0090e4615b3b10a9c9285534e80db49e04a98baf895cccb5d9c934849464afff0#npm:1.16.0"],\
+          ["follow-redirects", "virtual:77f999ccb93c7a8b1163212330fc2663930702a6310c22e4e44a0943273d572bf2cd007ae086150f8e94e02087a59aa85c3d28f0def8ae1df499b727a5c2330b#npm:1.16.0"],\
           ["@types/debug", null],\
           ["debug", null]\
         ],\
@@ -6850,7 +6850,7 @@ const RAW_RUNTIME_STATE =
           ["@swc/jest", "virtual:5e4e9afa06d484f20696d87ff835c290754cb92213a15fa7db1dc090c87c87eb2e5155f07ec13dda6984aaa1c0324b50497c1428ff9646c2ce899fdce782d874#npm:0.2.39"],\
           ["@types/jest", "npm:30.0.0"],\
           ["@types/node", "npm:20.19.11"],\
-          ["axios", "npm:1.15.0"],\
+          ["axios", "npm:1.16.0"],\
           ["commander", "npm:11.1.0"],\
           ["eslint", "virtual:5e4e9afa06d484f20696d87ff835c290754cb92213a15fa7db1dc090c87c87eb2e5155f07ec13dda6984aaa1c0324b50497c1428ff9646c2ce899fdce782d874#npm:10.0.3"],\
           ["globals", "npm:16.3.0"],\
