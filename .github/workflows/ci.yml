@@ -10,8 +10,13 @@ jobs:
   test:
     runs-on: ubuntu-24.04
 
+    permissions:
+      contents: read
+
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
       - name: Enable Corepack for yarn
         run: corepack enable
 
