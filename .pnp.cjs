@@ -1224,7 +1224,7 @@ const RAW_RUNTIME_STATE =
           ["camelcase", "npm:5.3.1"],\
           ["find-up", "npm:4.1.0"],\
           ["get-package-type", "npm:0.1.0"],\
-          ["js-yaml", "npm:4.3.0"],\
+          ["js-yaml", "npm:4.3.1"],\
           ["resolve-from", "npm:5.0.0"]\
         ],\
         "linkType": "HARD"\
@@ -4832,10 +4832,10 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["js-yaml", [\
-      ["npm:4.3.0", {\
-        "packageLocation": "./.yarn/cache/js-yaml-npm-4.3.0-1586601382-058b30473d.zip/node_modules/js-yaml/",\
+      ["npm:4.3.1", {\
+        "packageLocation": "./.yarn/cache/js-yaml-npm-4.3.1-6383f7fb93-13c500ca32.zip/node_modules/js-yaml/",\
         "packageDependencies": [\
-          ["js-yaml", "npm:4.3.0"],\
+          ["js-yaml", "npm:4.3.1"],\
           ["argparse", "npm:2.0.1"]\
         ],\
         "linkType": "HARD"\
