@@ -38,9 +38,5 @@
   "dependencies": {
     "axios": "^1.18.0",
     "commander": "^11.0.0"
-  },
-  "resolutions": {
-    "js-yaml": "^4.3.1",
-    "test-exclude": "^8.0.0"
   }
 }
